@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Eye, Search, FileArchive } from "lucide-react";
+import { Download, Eye, Search, FileArchive, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { useSiswa, useKelas, useSekolahInfo } from "@/hooks/useSWR";
 import { LoadingSpinner, ErrorState } from "@/components/ui/loading-spinner";
@@ -85,8 +85,15 @@ export default function KartuPelajarPage() {
 
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        background: '#ffffff',
+      // Find the parent container with the fixed dimensions
+      const container = cardRef.current.parentElement;
+      if (!container) {
+        toast.error('Container tidak ditemukan');
+        return;
+      }
+
+      const canvas = await html2canvas(container, {
+        background: '#f3f4f6', // Match container background
         logging: false,
         useCORS: true,
         width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
@@ -106,6 +113,66 @@ export default function KartuPelajarPage() {
     } finally {
       setIsExporting(false);
     }
+  };
+
+  const handlePrintCard = (siswa: any) => {
+    if (!cardRef.current) return;
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Gagal membuka jendela cetak');
+      return;
+    }
+
+    // Get the card HTML
+    const cardHTML = cardRef.current.outerHTML;
+    
+    // Create print-friendly HTML
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Kartu Pelajar - ${siswa.nama}</title>
+          <style>
+            @page {
+              size: 600px 350px;
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              background: #f3f4f6;
+            }
+            @media print {
+              body {
+                background: white;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${cardHTML}
+        </body>
+      </html>
+    `;
+
+    // Write to the new window
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        toast.success(`Kartu pelajar ${siswa.nama} siap dicetak`);
+      }, 500);
+    };
   };
 
   const exportAllCardsAsZIP = async () => {
@@ -149,8 +216,15 @@ export default function KartuPelajarPage() {
               })
             );
 
-            const canvas = await html2canvas(cardRef.current, {
-              background: '#ffffff',
+            // Find the parent container with the fixed dimensions
+            const container = cardRef.current.parentElement;
+            if (!container) {
+              console.error('Container not found for student:', s.nama);
+              return;
+            }
+
+            const canvas = await html2canvas(container, {
+              background: '#f3f4f6', // Match container background
               logging: false,
               useCORS: true,
               width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
@@ -310,6 +384,24 @@ export default function KartuPelajarPage() {
                   cardRef={cardRef as React.RefObject<HTMLDivElement>}
                   generateQRCode={generateQRCode}
                 />
+              </div>
+              
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => exportCardAsPNG(previewSiswa)}
+                  disabled={isExporting}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {isExporting ? 'Mengexport...' : 'Export PNG'}
+                </Button>
+                <Button 
+                  onClick={() => handlePrintCard(previewSiswa)}
+                >
+                  <Printer className="mr-2 h-4 w-4" />
+                  Cetak
+                </Button>
               </div>
             </div>
           )}
