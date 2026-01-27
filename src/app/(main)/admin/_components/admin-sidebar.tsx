@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import Image from "next/image";
-import { useSekolahInfo } from "@/hooks/useSWR";
+import { useSekolahInfoWithRefresh } from "@/hooks/useSWR";
 import {
   LayoutDashboard,
   Users,
@@ -58,8 +59,13 @@ const menuItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { data: schoolInfoData } = useSekolahInfo();
+  const { data: schoolInfoData, refresh } = useSekolahInfoWithRefresh();
   const schoolInfo = (schoolInfoData as any)?.data;
+
+  // Force refresh on mount to ensure latest data
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const isActive = (url: string) => {
     if (url === "/admin") {
@@ -75,7 +81,7 @@ export function AdminSidebar() {
           <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-white p-1 border">
             {schoolInfo?.logo ? (
               <Image
-                src={schoolInfo.logo}
+                src={`${schoolInfo.logo}?t=${Date.now()}`} // Cache busting with timestamp
                 alt="School Logo"
                 fill
                 className="object-contain"
