@@ -89,8 +89,8 @@ export default function KartuPelajarPage() {
         background: '#ffffff',
         logging: false,
         useCORS: true,
-        width: cardRef.current?.offsetWidth * 3, // 3x scale for HD quality
-        height: cardRef.current?.offsetHeight * 3,
+        width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
+        height: 350 * 3, // Fixed 350px height at 3x scale = 1050px for HD
       });
 
       const link = document.createElement('a');
@@ -153,8 +153,8 @@ export default function KartuPelajarPage() {
               background: '#ffffff',
               logging: false,
               useCORS: true,
-              width: cardRef.current?.offsetWidth * 3, // 3x scale for HD quality
-              height: cardRef.current?.offsetHeight * 3,
+              width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
+              height: 350 * 3, // Fixed 350px height at 3x scale = 1050px for HD
             });
 
             const blob = await new Promise<Blob>((resolve) => {
@@ -295,21 +295,21 @@ export default function KartuPelajarPage() {
 
           {previewSiswa && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <StudentCard 
-                siswa={previewSiswa} 
-                sekolah={sekolah} 
-                cardRef={cardRef as React.RefObject<HTMLDivElement>}
-                generateQRCode={generateQRCode}
-              />
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <Button variant="outline" onClick={() => setPreviewSiswa(null)}>
-                  Tutup
-                </Button>
-                <Button onClick={() => exportCardAsPNG(previewSiswa)} disabled={isExporting}>
-                  <Download style={{ marginRight: '8px', width: '16px', height: '16px' }} />
-                  {isExporting ? 'Mengexport...' : 'Cetak Kartu'}
-                </Button>
+              <div style={{ 
+                width: '600px', 
+                height: '350px', 
+                overflow: 'hidden',
+                background: '#f3f4f6',
+                borderRadius: '12px',
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}>
+                <StudentCard 
+                  siswa={previewSiswa} 
+                  sekolah={sekolah} 
+                  cardRef={cardRef as React.RefObject<HTMLDivElement>}
+                  generateQRCode={generateQRCode}
+                />
               </div>
             </div>
           )}
@@ -356,18 +356,19 @@ function StudentCard({
     <div 
       ref={cardRef}
       style={{
-        width: '600px', // Fixed width for consistent export
-        height: '350px', // Fixed height for consistent export
-        minWidth: '600px', // Prevent shrinking
-        minHeight: '350px', // Prevent shrinking
+        width: '100%',
+        maxWidth: '600px',
+        aspectRatio: '600/350', // Maintain aspect ratio
         background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
         borderRadius: '12px',
-        padding: '24px',
+        padding: '16px',
         color: 'white',
         position: 'relative',
         overflow: 'hidden',
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         boxSizing: 'border-box',
+        transform: 'scale(1)', // Ensure proper scaling
+        transformOrigin: 'top left',
       }}
     >
       {/* Background Pattern */}
