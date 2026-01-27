@@ -54,7 +54,7 @@ export default function KartuPelajarPage() {
     console.log('=== KARTU PELAJAR DEBUG ===');
     console.log('Sekolah Data:', sekolah);
     console.log('Sekolah Logo:', sekolah?.logo);
-    console.log('Sekolah Nama:', sekolah?.namaSekolah);
+    console.log('Sekolah Nama:', sekolah?.nama);
     console.log('SekolahData Raw:', sekolahData);
     console.log('===========================');
   }, [sekolah, sekolahData]);
@@ -334,7 +334,7 @@ function StudentCard({
     console.log('Siswa:', siswa);
     console.log('Sekolah in Card:', sekolah);
     console.log('Sekolah Logo in Card:', sekolah?.logo);
-    console.log('Sekolah Nama in Card:', sekolah?.namaSekolah);
+    console.log('Sekolah Nama in Card:', sekolah?.nama);
     console.log('===========================');
     
     if (siswa?.nisn) {
@@ -412,7 +412,7 @@ function StudentCard({
           {/* School Name */}
           <div style={{ textAlign: 'right', flex: 1, marginLeft: '16px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', lineHeight: '1.2' }}>
-              {sekolah?.namaSekolah || 'SMP NEGERI 1'}
+              {sekolah?.nama || 'SMP NEGERI 1'}
             </h2>
             <p style={{ fontSize: '14px', opacity: 0.9 }}>Kartu Pelajar</p>
           </div>
