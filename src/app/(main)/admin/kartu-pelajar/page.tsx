@@ -86,11 +86,9 @@ export default function KartuPelajarPage() {
     setIsExporting(true);
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: '#ffffff',
+        background: '#ffffff',
         logging: false,
         useCORS: true,
-        allowTaint: true,
       });
 
       const link = document.createElement('a');
@@ -150,11 +148,9 @@ export default function KartuPelajarPage() {
             );
 
             const canvas = await html2canvas(cardRef.current, {
-              scale: 2,
-              backgroundColor: '#ffffff',
+              background: '#ffffff',
               logging: false,
               useCORS: true,
-              allowTaint: true,
             });
 
             const blob = await new Promise<Blob>((resolve) => {
