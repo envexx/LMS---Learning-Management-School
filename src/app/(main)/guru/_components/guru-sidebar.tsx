@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -80,6 +82,19 @@ const menuItems = [
 
 export function GuruSidebar() {
   const pathname = usePathname();
+  const [schoolInfo, setSchoolInfo] = useState<any>(null);
+
+  // Fetch school info
+  useEffect(() => {
+    fetch('/api/school/info')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setSchoolInfo(data.data);
+        }
+      })
+      .catch(err => console.error('Error fetching school info:', err));
+  }, []);
 
   const isActive = (url: string) => {
     if (url === "/guru") {
@@ -92,12 +107,24 @@ export function GuruSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-gradient-to-r from-[#1488cc] to-[#2b32b2]">
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
+          {schoolInfo?.logo ? (
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white p-1 border">
+              <Image
+                src={schoolInfo.logo}
+                alt={schoolInfo.nama || 'School Logo'}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="p-2 rounded-lg bg-gradient-to-r from-[#1488cc] to-[#2b32b2]">
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+          )}
           <div>
             <h2 className="font-semibold">Portal Guru</h2>
-            <p className="text-xs text-muted-foreground">E-Learning System</p>
+            <p className="text-xs text-muted-foreground">{schoolInfo?.nama || 'E-Learning System'}</p>
           </div>
         </div>
       </SidebarHeader>

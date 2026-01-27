@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Users,
@@ -54,23 +56,43 @@ const menuItems = [
   },
 ];
 
-export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AdminSidebar() {
   const pathname = usePathname();
+  const [schoolInfo, setSchoolInfo] = useState<any>(null);
+
+  // Fetch school info
+  useEffect(() => {
+    fetch('/api/school/info')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setSchoolInfo(data.data);
+        }
+      })
+      .catch(err => console.error('Error fetching school info:', err));
+  }, []);
 
   const isActive = (url: string) => {
-    return pathname === url;
+    if (url === "/admin") {
+      return pathname === url;
+    }
+    return pathname.startsWith(url);
   };
 
   return (
-    <Sidebar {...props}>
+    <Sidebar>
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#1488cc] to-[#2b32b2] rounded-lg flex items-center justify-center shadow-sm">
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
+          {schoolInfo && schoolInfo.logo ? (
+            <Image src={schoolInfo.logo} width={32} height={32} alt="School Logo" />
+          ) : (
+            <div className="w-8 h-8 bg-gradient-to-br from-[#1488cc] to-[#2b32b2] rounded-lg flex items-center justify-center shadow-sm">
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+          )}
           <div className="flex flex-col">
             <span className="font-semibold text-sm">LMS Admin</span>
-            <span className="text-xs text-muted-foreground">Panel Administrator</span>
+            <span className="text-xs text-muted-foreground">{schoolInfo?.nama || 'Panel Administrator'}</span>
           </div>
         </div>
       </SidebarHeader>

@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AdminSidebar variant={variant} collapsible={collapsible} />
+      <AdminSidebar />
       <SidebarInset
         className={cn(
           "[html[data-content-layout=centered]_&]:mx-auto! [html[data-content-layout=centered]_&]:max-w-screen-2xl!",
