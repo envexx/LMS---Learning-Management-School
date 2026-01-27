@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { useSiswa, useKelas, useSekolahInfo } from "@/hooks/useSWR";
 import { LoadingSpinner, ErrorState } from "@/components/ui/loading-spinner";
 import QRCode from "qrcode";
-import html2canvas from "html2canvas";
+import { toPng } from 'html-to-image';
 import JSZip from "jszip";
 
 export default function KartuPelajarPage() {
@@ -85,25 +85,21 @@ export default function KartuPelajarPage() {
 
     setIsExporting(true);
     try {
-      // Find the parent container with the fixed dimensions
-      const container = cardRef.current.parentElement;
-      if (!container) {
-        toast.error('Container tidak ditemukan');
-        return;
-      }
-
-      const canvas = await html2canvas(container, {
-        background: '#f3f4f6', // Match container background
-        logging: false,
-        useCORS: true,
-        width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
-        height: 350 * 3, // Fixed 350px height at 3x scale = 1050px for HD
+      // Use html-to-image to capture the card directly
+      const dataUrl = await toPng(cardRef.current, {
+        quality: 0.95,
+        width: 600,
+        height: 350,
+        pixelRatio: 3, // 3x pixel ratio for HD quality
+        fetchRequestInit: {
+          cache: 'no-store',
+        },
       });
 
       const link = document.createElement('a');
       const fileName = `${siswa.nama.replace(/\s+/g, '-').toLowerCase()}-${siswa.nisn}.png`;
       link.download = fileName;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
 
       toast.success(`Kartu pelajar ${siswa.nama} berhasil diexport`);
@@ -216,24 +212,20 @@ export default function KartuPelajarPage() {
               })
             );
 
-            // Find the parent container with the fixed dimensions
-            const container = cardRef.current.parentElement;
-            if (!container) {
-              console.error('Container not found for student:', s.nama);
-              return;
-            }
-
-            const canvas = await html2canvas(container, {
-              background: '#f3f4f6', // Match container background
-              logging: false,
-              useCORS: true,
-              width: 600 * 3, // Fixed 600px width at 3x scale = 1800px for HD
-              height: 350 * 3, // Fixed 350px height at 3x scale = 1050px for HD
+            // Use html-to-image to capture the card directly
+            const dataUrl = await toPng(cardRef.current, {
+              quality: 0.95,
+              width: 600,
+              height: 350,
+              pixelRatio: 3, // 3x pixel ratio for HD quality
+              fetchRequestInit: {
+                cache: 'no-store',
+              },
             });
 
-            const blob = await new Promise<Blob>((resolve) => {
-              canvas.toBlob((blob) => resolve(blob!), 'image/png');
-            });
+            // Convert dataUrl to blob
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
 
             const fileName = `${s.nama.replace(/\s+/g, '-').toLowerCase()}-${s.nisn}.png`;
             folder?.file(fileName, blob);
@@ -375,8 +367,11 @@ export default function KartuPelajarPage() {
                 overflow: 'hidden',
                 background: '#f3f4f6',
                 borderRadius: '12px',
-                padding: '20px',
-                boxSizing: 'border-box'
+                padding: '0px', // Remove padding to match card exactly
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
                 <StudentCard 
                   siswa={previewSiswa} 
