@@ -30,7 +30,7 @@ value: brutalist
   --sidebar-foreground: oklch(0 0 0);
   --sidebar-primary: oklch(0.6489 0.237 26.9728);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.5635 0.2408 260.8178);
+  --sidebar-accent: oklch(0.95 0 0);
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0 0 0);
   --sidebar-ring: oklch(0.6489 0.237 26.9728);
@@ -74,7 +74,7 @@ value: brutalist
   --sidebar-foreground: oklch(1 0 0);
   --sidebar-primary: oklch(0.7044 0.1872 23.1858);
   --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.6755 0.1765 252.2592);
+  --sidebar-accent: oklch(0.25 0 0);
   --sidebar-accent-foreground: oklch(0 0 0);
   --sidebar-border: oklch(1 0 0);
   --sidebar-ring: oklch(0.7044 0.1872 23.1858);

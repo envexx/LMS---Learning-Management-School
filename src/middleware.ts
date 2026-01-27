@@ -1,0 +1,50 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Skip middleware for public routes
+  const publicRoutes = ['/login', '/api/auth'];
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // Skip middleware for static files and other API routes
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') ||
+    pathname.startsWith('/api')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Check if session cookie exists
+  const sessionCookie = request.cookies.get('e-learning-session');
+  
+  if (!sessionCookie) {
+    // No session cookie, redirect to login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // If accessing root, let the client handle redirect based on role
+  // The useAuth hook will handle this
+  
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|public).*)',
+  ],
+};

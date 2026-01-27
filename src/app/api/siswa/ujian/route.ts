@@ -1,0 +1,141 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getSession } from '@/lib/session';
+
+export async function GET(request: Request) {
+  try {
+    const session = await getSession();
+
+    if (!session.isLoggedIn || session.role !== 'SISWA') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get siswa data
+    const siswa = await prisma.siswa.findFirst({
+      where: { userId: session.userId },
+      include: {
+        kelas: true,
+      },
+    });
+
+    if (!siswa) {
+      return NextResponse.json(
+        { success: false, error: 'Siswa not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check global access control
+    const now = new Date();
+    let accessControl = null;
+    let isAccessActive = false;
+    
+    try {
+      // @ts-ignore - Prisma client might not have loaded new model yet
+      accessControl = await prisma.ujianAccessControl?.findFirst();
+      
+      // Check if access control is active and token is valid
+      isAccessActive = !!(accessControl && 
+                            accessControl.isActive && 
+                            accessControl.tokenExpiresAt && 
+                            accessControl.tokenExpiresAt > now);
+    } catch (error) {
+      // If ujianAccessControl table doesn't exist yet, allow access temporarily
+      console.log('UjianAccessControl not available yet, allowing access');
+      isAccessActive = true;
+    }
+
+    // Note: We don't return empty array here
+    // Access control only affects starting NEW exams, not viewing completed ones
+
+    // Get ujian for siswa's kelas
+    const ujian = await prisma.ujian.findMany({
+      where: {
+        kelas: {
+          has: siswa.kelas.nama,
+        },
+        status: 'aktif', // Only show active exams
+      },
+      include: {
+        mapel: true,
+        soalPilihanGanda: true,
+        soalEssay: true,
+        submissions: {
+          where: {
+            siswaId: siswa.id,
+          },
+        },
+      },
+      orderBy: {
+        tanggal: 'desc',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ujian: ujian.map(u => {
+          const submission = u.submissions[0];
+          
+          // Parse exam date and time
+          const examDate = new Date(u.tanggal);
+          const [hours, minutes] = u.waktuMulai.split(':').map(Number);
+          examDate.setHours(hours, minutes, 0, 0);
+          
+          // Calculate exam end time
+          const examEndTime = new Date(examDate.getTime() + u.durasi * 60000);
+          
+          // Determine exam status
+          let examStatus = 'belum_dimulai'; // not started yet
+          let canStart = false;
+          
+          if (submission) {
+            examStatus = 'selesai'; // already submitted
+            canStart = false; // Already completed, no need to start again
+          } else if (now < examDate) {
+            examStatus = 'belum_dimulai'; // not started yet
+            canStart = false;
+          } else if (now >= examDate && now <= examEndTime) {
+            examStatus = 'berlangsung'; // exam is ongoing
+            // Can only start if access control is active (has valid token)
+            canStart = isAccessActive;
+          } else if (now > examEndTime) {
+            examStatus = 'berakhir'; // exam time has passed
+            canStart = false;
+          }
+          
+          return {
+            id: u.id,
+            judul: u.judul,
+            deskripsi: u.deskripsi,
+            mapel: u.mapel.nama,
+            tanggal: u.tanggal,
+            waktuMulai: u.waktuMulai,
+            durasi: u.durasi,
+            totalSoal: u.soalPilihanGanda.length + u.soalEssay.length,
+            status: u.status,
+            examStatus, // belum_dimulai, berlangsung, berakhir, selesai
+            canStart, // boolean - can student start this exam now
+            examStartTime: examDate,
+            examEndTime,
+            submission: submission ? {
+              id: submission.id,
+              submittedAt: submission.submittedAt,
+              nilai: submission.nilai,
+              status: 'sudah',
+            } : null,
+          };
+        }),
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching ujian:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch ujian' },
+      { status: 500 }
+    );
+  }
+}

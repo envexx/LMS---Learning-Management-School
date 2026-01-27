@@ -1,0 +1,531 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  role         UserRole
+  profilePhoto String?  // URL to profile photo
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  siswa Siswa?
+  guru  Guru?
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  GURU
+  SISWA
+}
+
+// ============================================
+// SCHOOL INFORMATION
+// ============================================
+
+model SekolahInfo {
+  id        String   @id @default(cuid())
+  
+  // Informasi Sekolah
+  namaSekolah    String
+  alamat         String
+  noTelp         String
+  email          String
+  website        String?
+  logo           String?  // URL to logo file
+  
+  // Kepala Sekolah
+  namaKepsek     String
+  nipKepsek      String
+  
+  // Tahun Ajaran
+  tahunAjaran    String   // 2024/2025
+  semester       String   // Ganjil/Genap
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@map("sekolah_info")
+}
+
+// ============================================
+// MASTER DATA
+// ============================================
+
+model Kelas {
+  id          String   @id @default(cuid())
+  nama        String   @unique // 7A, 7B, 8A, etc
+  tingkat     String // 7, 8, 9
+  waliKelasId String?
+  tahunAjaran String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  waliKelas Guru?    @relation("WaliKelas", fields: [waliKelasId], references: [id])
+  siswa     Siswa[]
+  guru      GuruKelas[]
+  jadwal    Jadwal[]
+
+  @@index([nama])
+  @@index([tingkat])
+  @@index([tahunAjaran])
+  @@map("kelas")
+}
+
+model MataPelajaran {
+  id        String   @id @default(cuid())
+  nama      String   @unique
+  kode      String   @unique
+  jenis     String // wajib, peminatan
+  jamPerMinggu Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  guru    GuruMapel[]
+  jadwal  Jadwal[]
+  materi  Materi[]
+  ujian   Ujian[]
+  tugas   Tugas[]
+  nilai   Nilai[]
+
+  @@map("mata_pelajaran")
+}
+
+// ============================================
+// GURU
+// ============================================
+
+model Guru {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  nipUsername  String   @unique // NIP atau Username
+  nama         String
+  email        String   @unique
+  alamat       String?
+  jenisKelamin String
+  foto         String?  // URL to profile photo
+  isActive     Boolean  @default(true) // Status aktif guru
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mapel         GuruMapel[]     // Guru bisa mengajar banyak mapel
+  kelas         GuruKelas[]     // Guru bisa mengajar di banyak kelas
+  waliKelas     Kelas[]         @relation("WaliKelas")
+  jadwal        Jadwal[]
+  materi        Materi[]
+  ujian         Ujian[]
+  tugas         Tugas[]
+  nilaiInput    Nilai[]
+
+  @@index([nipUsername])
+  @@index([email])
+  @@index([userId])
+  @@map("guru")
+}
+
+model GuruMapel {
+  id      String @id @default(cuid())
+  guruId  String
+  mapelId String
+
+  guru  Guru          @relation(fields: [guruId], references: [id], onDelete: Cascade)
+  mapel MataPelajaran @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+
+  @@unique([guruId, mapelId])
+  @@map("guru_mapel")
+}
+
+model GuruKelas {
+  id      String @id @default(cuid())
+  guruId  String
+  kelasId String
+
+  guru  Guru  @relation(fields: [guruId], references: [id], onDelete: Cascade)
+  kelas Kelas @relation(fields: [kelasId], references: [id], onDelete: Cascade)
+
+  @@unique([guruId, kelasId])
+  @@map("guru_kelas")
+}
+
+// ============================================
+// SISWA
+// ============================================
+
+model Siswa {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  nisn         String   @unique
+  nis          String   @unique
+  nama         String
+  email        String   @unique
+  kelasId      String
+  jenisKelamin String
+  tanggalLahir DateTime
+  alamat       String
+  noTelp       String?
+  namaWali     String
+  noTelpWali   String
+  foto         String?  // URL to profile photo
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kelas             Kelas               @relation(fields: [kelasId], references: [id])
+  presensi          Presensi[]
+  kartuPelajar      KartuPelajar?
+  nilai             Nilai[]
+  tugasSubmission   TugasSubmission[]
+  ujianSubmission   UjianSubmission[]
+
+  @@index([nisn])
+  @@index([nis])
+  @@index([kelasId])
+  @@index([email])
+  @@index([userId])
+  @@map("siswa")
+}
+
+// ============================================
+// KARTU PELAJAR
+// ============================================
+
+model KartuPelajar {
+  id                String   @id @default(cuid())
+  siswaId           String   @unique
+  tanggalTerbit     DateTime @default(now())
+  tanggalKadaluarsa DateTime
+  status            String   @default("aktif") // aktif, nonaktif, hilang
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@map("kartu_pelajar")
+}
+
+// ============================================
+// JADWAL
+// ============================================
+
+model Jadwal {
+  id         String   @id @default(cuid())
+  kelasId    String
+  mapelId    String
+  guruId     String
+  hari       String // Senin, Selasa, etc
+  jamMulai   String // 08:00
+  jamSelesai String // 09:30
+  ruangan    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  kelas Kelas         @relation(fields: [kelasId], references: [id], onDelete: Cascade)
+  mapel MataPelajaran @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+  guru  Guru          @relation(fields: [guruId], references: [id], onDelete: Cascade)
+
+  @@map("jadwal")
+}
+
+// ============================================
+// PRESENSI
+// ============================================
+
+model Presensi {
+  id         String   @id @default(cuid())
+  siswaId    String
+  tanggal    DateTime @default(now())
+  status     String // hadir, izin, sakit, alpha
+  keterangan String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@unique([siswaId, tanggal])
+  @@index([siswaId])
+  @@index([tanggal])
+  @@index([status])
+  @@map("presensi")
+}
+
+// ============================================
+// MATERI PEMBELAJARAN
+// ============================================
+
+model Materi {
+  id            String   @id @default(cuid())
+  judul         String
+  deskripsi     String?
+  mapelId       String
+  guruId        String
+  kelas         String[] // Array of kelas names
+  tipe          String // pdf, video, image, link
+  fileUrl       String?
+  ukuran        String?
+  tanggalUpload DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  mapel MataPelajaran @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+  guru  Guru          @relation(fields: [guruId], references: [id], onDelete: Cascade)
+
+  @@map("materi")
+}
+
+// ============================================
+// TUGAS
+// ============================================
+
+model Tugas {
+  id          String   @id @default(cuid())
+  judul       String
+  deskripsi   String
+  instruksi   String
+  mapelId     String
+  guruId      String
+  kelas       String[] // Array of kelas names
+  deadline    DateTime
+  fileUrl     String?
+  status      String   @default("aktif") // aktif, selesai
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  mapel       MataPelajaran     @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+  guru        Guru              @relation(fields: [guruId], references: [id], onDelete: Cascade)
+  submissions TugasSubmission[]
+
+  @@index([guruId])
+  @@index([mapelId])
+  @@index([status])
+  @@index([deadline])
+  @@map("tugas")
+}
+
+model TugasSubmission {
+  id          String    @id @default(cuid())
+  tugasId     String
+  siswaId     String
+  fileUrl     String?   // URL link (Google Drive, etc) - nullable
+  fileUpload  String?   // Uploaded file path - nullable
+  catatan     String?
+  nilai       Int?
+  feedback    String?
+  submittedAt DateTime  @default(now())
+  gradedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  tugas Tugas @relation(fields: [tugasId], references: [id], onDelete: Cascade)
+  siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@unique([tugasId, siswaId])
+  @@index([tugasId])
+  @@index([siswaId])
+  @@index([submittedAt])
+  @@map("tugas_submission")
+}
+
+// ============================================
+// UJIAN
+// ============================================
+
+model Ujian {
+  id                String   @id @default(cuid())
+  judul             String
+  deskripsi         String?
+  mapelId           String
+  guruId            String
+  kelas             String[] // Array of kelas names
+  tanggal           DateTime
+  waktuMulai        String // 08:00
+  durasi            Int // in minutes
+  shuffleQuestions  Boolean  @default(false)
+  showScore         Boolean  @default(true)
+  status            String   @default("draft") // draft, aktif, selesai
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  mapel            MataPelajaran      @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+  guru             Guru               @relation(fields: [guruId], references: [id], onDelete: Cascade)
+  soalPilihanGanda SoalPilihanGanda[]
+  soalEssay        SoalEssay[]
+  submissions      UjianSubmission[]
+
+  @@index([guruId])
+  @@index([mapelId])
+  @@index([status])
+  @@index([tanggal])
+  @@map("ujian")
+}
+
+// ============================================
+// UJIAN ACCESS CONTROL (Admin Only - Global)
+// ============================================
+
+model UjianAccessControl {
+  id              String    @id @default(cuid())
+  isActive        Boolean   @default(false) // Global exam access status
+  currentToken    String?   // Current active token (6-digit code)
+  tokenGeneratedAt DateTime? // When token was generated
+  tokenExpiresAt  DateTime? // Token expires after 2 minutes
+  generatedBy     String?   // Admin user ID who generated token
+  description     String?   // Optional description for this session
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("ujian_access_control")
+}
+
+model SoalPilihanGanda {
+  id            String   @id @default(cuid())
+  ujianId       String
+  pertanyaan    String
+  opsiA         String
+  opsiB         String
+  opsiC         String
+  opsiD         String
+  jawabanBenar  String // A, B, C, D
+  urutan        Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  ujian   Ujian                      @relation(fields: [ujianId], references: [id], onDelete: Cascade)
+  jawaban JawabanPilihanGanda[]
+
+  @@map("soal_pilihan_ganda")
+}
+
+model SoalEssay {
+  id           String   @id @default(cuid())
+  ujianId      String
+  pertanyaan   String
+  kunciJawaban String
+  urutan       Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  ujian   Ujian            @relation(fields: [ujianId], references: [id], onDelete: Cascade)
+  jawaban JawabanEssay[]
+
+  @@map("soal_essay")
+}
+
+model UjianSubmission {
+  id          String    @id @default(cuid())
+  ujianId     String
+  siswaId     String
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  nilai       Int?
+  status      String    @default("in_progress") // in_progress, submitted, graded
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  ujian              Ujian                   @relation(fields: [ujianId], references: [id], onDelete: Cascade)
+  siswa              Siswa                   @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  jawabanPilihanGanda JawabanPilihanGanda[]
+  jawabanEssay       JawabanEssay[]
+
+  @@unique([ujianId, siswaId])
+  @@map("ujian_submission")
+}
+
+model JawabanPilihanGanda {
+  id           String   @id @default(cuid())
+  submissionId String
+  soalId       String
+  jawaban      String // A, B, C, D
+  isCorrect    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  // Relations
+  submission UjianSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  soal       SoalPilihanGanda @relation(fields: [soalId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, soalId])
+  @@map("jawaban_pilihan_ganda")
+}
+
+model JawabanEssay {
+  id           String    @id @default(cuid())
+  submissionId String
+  soalId       String
+  jawaban      String
+  nilai        Int?
+  feedback     String?
+  gradedAt     DateTime?
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  submission UjianSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  soal       SoalEssay        @relation(fields: [soalId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, soalId])
+  @@map("jawaban_essay")
+}
+
+// ============================================
+// NILAI
+// ============================================
+
+model Nilai {
+  id         String   @id @default(cuid())
+  siswaId    String
+  mapelId    String
+  guruId     String
+  tugas      Int?
+  uts        Int?
+  uas        Int?
+  nilaiAkhir Int?
+  semester   String // Ganjil, Genap
+  tahunAjaran String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  siswa Siswa         @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  mapel MataPelajaran @relation(fields: [mapelId], references: [id], onDelete: Cascade)
+  guru  Guru          @relation(fields: [guruId], references: [id], onDelete: Cascade)
+
+  @@unique([siswaId, mapelId, semester, tahunAjaran])
+  @@index([siswaId])
+  @@index([mapelId])
+  @@index([semester])
+  @@index([tahunAjaran])
+  @@map("nilai")
+}

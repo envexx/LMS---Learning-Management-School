@@ -30,7 +30,7 @@ value: tangerine
   --sidebar-foreground: oklch(0.32 0 0);
   --sidebar-primary: oklch(0.64 0.17 36.44);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.91 0.02 243.82);
+  --sidebar-accent: oklch(0.95 0 0);
   --sidebar-accent-foreground: oklch(0.38 0.14 265.52);
   --sidebar-border: oklch(0.93 0.01 264.53);
   --sidebar-ring: oklch(0.64 0.17 36.44);
@@ -74,7 +74,7 @@ value: tangerine
   --sidebar-foreground: oklch(0.92 0 0);
   --sidebar-primary: oklch(0.64 0.17 36.44);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.34 0.06 267.59);
+  --sidebar-accent: oklch(0.25 0 0);
   --sidebar-accent-foreground: oklch(0.88 0.06 254.13);
   --sidebar-border: oklch(0.38 0.03 269.73);
   --sidebar-ring: oklch(0.64 0.17 36.44);
