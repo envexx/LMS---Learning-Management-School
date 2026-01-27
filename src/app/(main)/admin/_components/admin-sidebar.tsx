@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useSekolahInfoWithFallback } from "@/hooks/useSWR";
+import { useSekolahInfo } from "@/hooks/useSWR";
 import {
   LayoutDashboard,
   Users,
@@ -58,8 +58,8 @@ const menuItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { data: schoolInfoData } = useSekolahInfoWithFallback();
-  const schoolInfo = schoolInfoData as any;
+  const { data: schoolInfoData } = useSekolahInfo();
+  const schoolInfo = (schoolInfoData as any)?.data;
 
   const isActive = (url: string) => {
     if (url === "/admin") {

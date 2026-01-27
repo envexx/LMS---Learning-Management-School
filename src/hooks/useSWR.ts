@@ -190,7 +190,7 @@ export function useSekolahInfoWithFallback() {
 
   const { data, error, isLoading, mutate } = useSWR(
     '/api/school/info',
-    fetcherWithAuth,
+    fetcher,
     {
       revalidateIfStale: false,
       revalidateOnFocus: false,

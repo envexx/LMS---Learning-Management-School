@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { useSekolahInfoWithFallback } from "@/hooks/useSWR";
+import { useSekolahInfo } from "@/hooks/useSWR";
 import {
   Sidebar,
   SidebarContent,
@@ -66,8 +66,8 @@ const menuItems = [
 
 export function SiswaSidebar() {
   const pathname = usePathname();
-  const { data: schoolInfoData } = useSekolahInfoWithFallback();
-  const schoolInfo = schoolInfoData as any;
+  const { data: schoolInfoData } = useSekolahInfo();
+  const schoolInfo = (schoolInfoData as any)?.data;
 
   const isActive = (url: string) => {
     if (url === "/siswa") {

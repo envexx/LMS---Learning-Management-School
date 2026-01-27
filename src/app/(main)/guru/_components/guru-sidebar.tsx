@@ -26,7 +26,7 @@ import {
   Construction,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSekolahInfoWithFallback } from "@/hooks/useSWR";
+import { useSekolahInfo } from "@/hooks/useSWR";
 
 const menuItems = [
   {
@@ -82,8 +82,8 @@ const menuItems = [
 
 export function GuruSidebar() {
   const pathname = usePathname();
-  const { data: schoolInfoData } = useSekolahInfoWithFallback();
-  const schoolInfo = schoolInfoData as any;
+  const { data: schoolInfoData } = useSekolahInfo();
+  const schoolInfo = (schoolInfoData as any)?.data;
 
   const isActive = (url: string) => {
     if (url === "/guru") {
