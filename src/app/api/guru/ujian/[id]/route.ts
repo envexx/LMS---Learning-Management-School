@@ -129,7 +129,20 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { judul, deskripsi, durasi } = body;
+    const { 
+      judul, 
+      deskripsi, 
+      mapelId, 
+      kelas, 
+      tanggal, 
+      waktuMulai, 
+      durasi,
+      shuffleQuestions,
+      showScore,
+      status,
+      soalPG,
+      soalEssay,
+    } = body;
 
     // Validate
     if (!judul || !judul.trim()) {
@@ -161,14 +174,117 @@ export async function PUT(
       );
     }
 
-    // Update ujian
-    const updatedUjian = await prisma.ujian.update({
-      where: { id },
-      data: {
-        judul: judul.trim(),
-        deskripsi: deskripsi?.trim() || null,
-        durasi: parseInt(durasi),
-      },
+    // Validasi: Jika status aktif/publish, SEMUA soalPG harus valid dengan semua opsi (A-D) terisi
+    const finalStatus = status || existingUjian.status || 'draft';
+    const allSoalPG = soalPG || [];
+    
+    if (finalStatus === 'aktif') {
+      if (allSoalPG.length === 0) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Tidak dapat mempublikasikan ujian. Soal Pilihan Ganda tidak boleh kosong untuk ujian aktif. Silakan tambahkan minimal 1 soal PG atau simpan sebagai draft terlebih dahulu.' 
+          },
+          { status: 400 }
+        );
+      }
+
+      // Cek apakah semua soal PG valid - untuk publish, SEMUA opsi (A, B, C, D) harus terisi
+      const invalidSoalPG = allSoalPG.filter((soal: any) => {
+        const hasQuestion = soal.pertanyaan && soal.pertanyaan.replace(/<[^>]*>/g, '').trim().length > 0;
+        // Untuk publish, semua opsi harus terisi
+        const allOptionsFilled = soal.opsiA && soal.opsiA.replace(/<[^>]*>/g, '').trim().length > 0 &&
+                                soal.opsiB && soal.opsiB.replace(/<[^>]*>/g, '').trim().length > 0 &&
+                                soal.opsiC && soal.opsiC.replace(/<[^>]*>/g, '').trim().length > 0 &&
+                                soal.opsiD && soal.opsiD.replace(/<[^>]*>/g, '').trim().length > 0;
+        return !(hasQuestion && allOptionsFilled);
+      });
+
+      if (invalidSoalPG.length > 0) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Tidak dapat mempublikasikan ujian. Terdapat ${invalidSoalPG.length} soal Pilihan Ganda yang belum lengkap. Semua opsi (A, B, C, D) harus diisi untuk publish.` 
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Filter soal yang valid untuk disimpan (untuk draft, minimal 1 opsi terisi)
+    const validSoalPG = allSoalPG.filter((soal: any) => {
+      const hasQuestion = soal.pertanyaan && soal.pertanyaan.replace(/<[^>]*>/g, '').trim().length > 0;
+      // Untuk draft, minimal 1 opsi terisi
+      const hasOptions = (soal.opsiA && soal.opsiA.replace(/<[^>]*>/g, '').trim().length > 0) ||
+                        (soal.opsiB && soal.opsiB.replace(/<[^>]*>/g, '').trim().length > 0) ||
+                        (soal.opsiC && soal.opsiC.replace(/<[^>]*>/g, '').trim().length > 0) ||
+                        (soal.opsiD && soal.opsiD.replace(/<[^>]*>/g, '').trim().length > 0);
+      return hasQuestion && hasOptions;
+    });
+
+    const validSoalEssay = (soalEssay || []).filter((soal: any) => {
+      const hasQuestion = soal.pertanyaan && soal.pertanyaan.replace(/<[^>]*>/g, '').trim().length > 0;
+      return hasQuestion;
+    });
+
+    // Update ujian dengan transaction untuk memastikan konsistensi
+    const updatedUjian = await prisma.$transaction(async (tx) => {
+      // Update ujian info
+      const ujian = await tx.ujian.update({
+        where: { id },
+        data: {
+          judul: judul.trim(),
+          deskripsi: deskripsi?.trim() || null,
+          mapelId: mapelId || existingUjian.mapelId,
+          kelas: Array.isArray(kelas) ? kelas : (kelas ? [kelas] : existingUjian.kelas),
+          tanggal: tanggal ? new Date(tanggal) : existingUjian.tanggal,
+          waktuMulai: waktuMulai || existingUjian.waktuMulai,
+          durasi: parseInt(durasi),
+          shuffleQuestions: shuffleQuestions !== undefined ? shuffleQuestions : existingUjian.shuffleQuestions,
+          showScore: showScore !== undefined ? showScore : existingUjian.showScore,
+          status: finalStatus,
+        },
+      });
+
+      // Hapus semua soal lama
+      await tx.soalPilihanGanda.deleteMany({
+        where: { ujianId: id },
+      });
+
+      await tx.soalEssay.deleteMany({
+        where: { ujianId: id },
+      });
+
+      // Buat soal baru
+      const soalToCreate = finalStatus === 'aktif' ? allSoalPG : validSoalPG;
+      
+      if (soalToCreate.length > 0) {
+        await tx.soalPilihanGanda.createMany({
+          data: soalToCreate.map((soal: any, index: number) => ({
+            ujianId: id,
+            pertanyaan: soal.pertanyaan,
+            opsiA: soal.opsiA,
+            opsiB: soal.opsiB,
+            opsiC: soal.opsiC,
+            opsiD: soal.opsiD,
+            jawabanBenar: soal.kunciJawaban || 'A',
+            urutan: index + 1,
+          })),
+        });
+      }
+
+      if (validSoalEssay.length > 0) {
+        await tx.soalEssay.createMany({
+          data: validSoalEssay.map((soal: any, index: number) => ({
+            ujianId: id,
+            pertanyaan: soal.pertanyaan,
+            kunciJawaban: soal.kunciJawaban || '',
+            urutan: index + 1,
+          })),
+        });
+      }
+
+      return ujian;
     });
 
     return NextResponse.json({

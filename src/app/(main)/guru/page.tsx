@@ -13,6 +13,7 @@ import {
   Clock,
   CheckCircle,
   WarningCircle,
+  Exam,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -107,63 +108,93 @@ export default function GuruDashboard() {
   ];
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold">Dashboard Guru</h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          Selamat datang, {user?.profile?.nama || 'Guru'}
-        </p>
-      </div>
+    <div className="space-y-6">
+      {/* Header Card with Blue Background */}
+      <Card className="bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] border-0 shadow-lg">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <Exam className="w-8 h-8 text-white" weight="duotone" />
+                <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">Dashboard Guru</h1>
+              </div>
+              <p className="text-blue-50 text-base md:text-lg">Selamat datang, {user?.profile?.nama || 'Guru'}</p>
+            </div>
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            iconBg={stat.iconBg}
-          />
-        ))}
-      </div>
+          {/* Statistics Cards */}
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mt-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Users className="w-5 h-5 text-white" weight="duotone" />
+                </div>
+                <p className="text-blue-100 text-sm font-medium">Total Kelas</p>
+              </div>
+              <p className="text-white text-3xl font-bold">{stats.totalKelas}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Student className="w-5 h-5 text-white" weight="duotone" />
+                </div>
+                <p className="text-blue-100 text-sm font-medium">Total Siswa</p>
+              </div>
+              <p className="text-white text-3xl font-bold">{stats.totalSiswa}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <CalendarBlank className="w-5 h-5 text-white" weight="duotone" />
+                </div>
+                <p className="text-blue-100 text-sm font-medium">Jadwal Hari Ini</p>
+              </div>
+              <p className="text-white text-3xl font-bold">{stats.jadwalHariIni}</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <ClipboardText className="w-5 h-5 text-white" weight="duotone" />
+                </div>
+                <p className="text-blue-100 text-sm font-medium">Tugas Belum Dinilai</p>
+              </div>
+              <p className="text-white text-3xl font-bold">{stats.tugasBelumDinilai}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="border shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" weight="duotone" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Clock className="w-5 h-5 text-[#165DFB]" weight="duotone" />
                 Jadwal Mengajar Hari Ini
               </CardTitle>
-              <Link href="/guru/jadwal">
-                <Button variant="ghost" size="sm">
-                  Lihat Semua
-                </Button>
-              </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {jadwalHariIni.length > 0 ? (
                 jadwalHariIni.map((jadwal: any) => (
                   <div
                     key={jadwal.id}
-                    className="flex items-start gap-4 p-4 border rounded-lg hover:bg-accent transition-colors"
+                    className="flex items-start gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-[#165DFB]/30 transition-all"
                   >
                     <div className="flex-shrink-0">
-                      <div className="p-2 rounded-lg bg-gray-100">
-                        <Clock className="w-4 h-4 text-gray-600" weight="duotone" />
+                      <div className="p-2 rounded-lg bg-[#165DFB]/10">
+                        <Clock className="w-4 h-4 text-[#165DFB]" weight="duotone" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="font-medium">{jadwal.mapel}</p>
-                        <span className="text-xs text-muted-foreground">
+                        <p className="font-semibold text-gray-900">{jadwal.mapel}</p>
+                        <span className="text-xs font-medium text-[#165DFB] bg-blue-50 px-2 py-1 rounded">
                           {jadwal.waktu}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-600">
                         Kelas {jadwal.kelas} • {jadwal.ruangan}
                       </p>
                     </div>
@@ -179,44 +210,39 @@ export default function GuruDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <WarningCircle className="w-5 h-5" weight="duotone" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <WarningCircle className="w-5 h-5 text-[#165DFB]" weight="duotone" />
                 Tugas Menunggu Penilaian
               </CardTitle>
-              <Link href="/guru/nilai">
-                <Button variant="ghost" size="sm">
-                  Lihat Semua
-                </Button>
-              </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {tugasPending.length > 0 ? (
                 tugasPending.map((tugas: any) => (
                   <div
                     key={tugas.id}
-                    className="flex items-start gap-4 p-4 border rounded-lg hover:bg-accent transition-colors"
+                    className="flex items-start gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-[#165DFB]/30 transition-all"
                   >
                     <div className="flex-shrink-0">
-                      <div className="p-2 rounded-lg bg-red-100">
+                      <div className="p-2 rounded-lg bg-red-50">
                         <ClipboardText className="w-4 h-4 text-red-600" weight="duotone" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <p className="font-medium">{tugas.judul}</p>
-                        <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                        <p className="font-semibold text-gray-900 line-clamp-1">{tugas.judul}</p>
+                        <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full whitespace-nowrap ml-2">
                           {tugas.jumlahSiswa} siswa
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-600">
                         {tugas.mapel} • Kelas {tugas.kelas}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Deadline: {new Date(tugas.deadline).toLocaleDateString("id-ID")}
                       </p>
                     </div>
@@ -233,7 +259,7 @@ export default function GuruDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* <div className="grid gap-4 md:grid-cols-3">
         <Link href="/guru/jadwal">
           <Card className="hover:bg-accent transition-colors cursor-pointer">
             <CardContent className="flex items-center gap-4 p-6">
@@ -281,7 +307,7 @@ export default function GuruDashboard() {
             </CardContent>
           </Card>
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }

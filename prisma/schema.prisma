@@ -254,6 +254,23 @@ model Jadwal {
 }
 
 // ============================================
+// INFO MASUK & PULANG
+// ============================================
+
+model InfoMasuk {
+  id        String   @id @default(cuid())
+  hari      String   // Senin, Selasa, Rabu, Kamis, Jumat, Sabtu, Minggu
+  jamMasuk  String   // 07:00
+  jamPulang String   // 14:00
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([hari])
+  @@index([hari])
+  @@map("info_masuk")
+}
+
+// ============================================
 // PRESENSI
 // ============================================
 
@@ -263,16 +280,18 @@ model Presensi {
   tanggal    DateTime @default(now())
   status     String // hadir, izin, sakit, alpha
   keterangan String?
+  tipe       String   @default("masuk") // masuk, pulang
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   // Relations
   siswa Siswa @relation(fields: [siswaId], references: [id], onDelete: Cascade)
 
-  @@unique([siswaId, tanggal])
+  @@unique([siswaId, tanggal, tipe])
   @@index([siswaId])
   @@index([tanggal])
   @@index([status])
+  @@index([tipe])
   @@map("presensi")
 }
 

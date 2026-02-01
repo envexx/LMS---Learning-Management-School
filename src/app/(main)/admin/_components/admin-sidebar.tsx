@@ -15,6 +15,7 @@ import {
   CreditCard,
   KeyRound,
   Settings,
+  Clock,
 } from "lucide-react";
 
 import {
@@ -52,6 +53,7 @@ const menuItems = [
       { title: "Token Ujian", icon: KeyRound, url: "/admin/token-ujian" },
       { title: "Presensi", icon: UserCheck, url: "/admin/presensi" },
       { title: "Kartu Pelajar", icon: CreditCard, url: "/admin/kartu-pelajar" },
+      { title: "Info Masuk & Pulang", icon: Clock, url: "/admin/info-masuk" },
     ],
   },
 ];

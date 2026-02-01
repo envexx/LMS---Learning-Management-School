@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tiptap Simple Editor Styles */
+@import "../styles/_variables.scss";
+@import "../styles/_keyframe-animations.scss";
+
 /* Theme preset styles: these override CSS variables based on the selected data-theme-preset */
 @import "../styles/presets/brutalist.css";
 @import "../styles/presets/soft-pop.css";
@@ -67,31 +71,33 @@ These serve as the fallback; there is no separate default.css file. */
   --card-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
-  --primary: #2C50AB; /* Midnight Frost A30 */
-  --primary-foreground: #f5f5ff;
-  --secondary: #ddeeff; /* Midnight Frost A0 */
-  --secondary-foreground: #2C50AB;
-  --muted: #ddeeff; /* Midnight Frost A0 */
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6; /* Neutral gray */
-  --accent-foreground: #0a0a0a;
+  --primary: #165DFB; /* Base blue color */
+  --primary-foreground: #ffffff;
+  --secondary: #e0f2fe; /* Light blue background */
+  --secondary-foreground: #165DFB;
+  --muted: #f0f9ff; /* Very light blue */
+  --muted-foreground: #0c4a6e;
+  --accent: #165DFB; /* Base blue */
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
-  --border: #ddeeff; /* Midnight Frost A0 */
-  --input: #ddeeff;
-  --ring: #2C50AB; /* Midnight Frost A30 */
-  --chart-1: #88aaff; /* Midnight Frost A20 */
-  --chart-2: #aaccff; /* Midnight Frost A10 */
-  --chart-3: #2C50AB; /* Midnight Frost A30 */
+  --border: #e5e7eb; /* Gray border */
+  --input: #e0f2fe; /* Light blue input */
+  --ring: #165DFB; /* Base blue ring */
+  --chart-1: #165DFB; /* Base blue */
+  --chart-2: #3b82f6; /* Blue 500 */
+  --chart-3: #165DFB; /* Base blue */
   --chart-4: #3b82f6;
-  --chart-5: #2563eb;
-  --sidebar: #fafafa;
+  --chart-5: #165DFB;
+  --sidebar: #ffffff; /* White sidebar */
   --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #2C50AB; /* Midnight Frost A30 */
-  --sidebar-primary-foreground: #f5f5ff;
-  --sidebar-accent: #f3f4f6; /* Neutral gray */
-  --sidebar-accent-foreground: #0a0a0a;
-  --sidebar-border: #ddeeff;
-  --sidebar-ring: #2C50AB;
+  --sidebar-primary: #165DFB; /* Base blue */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3f4f6; /* Gray accent for hover */
+  --sidebar-accent-foreground: #1f2937; /* Dark gray text */
+  --sidebar-active-bg: #165DFB; /* Blue for active items */
+  --sidebar-active-foreground: #ffffff; /* White text for active items */
+  --sidebar-border: #e5e7eb; /* Gray border */
+  --sidebar-ring: #165DFB; /* Base blue */
 
   /* fonts */
   --font-sans: var(--font-inter);
@@ -114,7 +120,7 @@ These serve as the fallback; there is no separate default.css file. */
   --accent: oklch(0.25 0 0); /* Neutral dark gray */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(0.4 0 0); /* Gray border for dark mode */
   --input: oklch(1 0 0 / 15%);
   --ring: oklab(74.8% -0.007 -0.129); /* Midnight Frost A20 */
   --chart-1: oklab(74.8% -0.007 -0.129); /* Midnight Frost A20 */
@@ -124,12 +130,12 @@ These serve as the fallback; there is no separate default.css file. */
   --chart-5: oklch(0.424 0.199 265.638);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklab(74.8% -0.007 -0.129); /* Midnight Frost A20 */
-  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.25 0 0); /* Neutral dark gray */
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklab(74.8% -0.007 -0.129);
+  --sidebar-primary: oklch(0.55 0.18 250); /* Base blue */
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.25 0 0); /* Gray accent for hover in dark mode */
+  --sidebar-accent-foreground: oklch(0.9 0 0); /* Light gray text */
+  --sidebar-border: oklch(0.4 0 0); /* Gray border for dark mode */
+  --sidebar-ring: oklch(0.55 0.18 250);
 }
 
 @layer base {
@@ -211,6 +217,32 @@ These serve as the fallback; there is no separate default.css file. */
   }
   html[data-font="greatVibes"] body {
     --font-sans: var(--font-great-vibes);
+  }
+
+  /* Override sidebar active state for guru sidebar */
+  [data-sidebar="menu-button"][data-active="true"] {
+    background-color: #165DFB !important;
+    color: #ffffff !important;
+  }
+
+  [data-sidebar="menu-button"][data-active="true"] svg {
+    color: #ffffff !important;
+  }
+
+  [data-sidebar="menu-button"][data-active="true"]:hover {
+    background-color: #165DFB !important;
+    opacity: 0.9;
+  }
+
+  /* Override dropdown menu item icons to be white on hover/focus */
+  [data-slot="dropdown-menu-item"]:focus svg,
+  [data-slot="dropdown-menu-item"][data-highlighted] svg {
+    color: #ffffff !important;
+  }
+
+  [data-slot="dropdown-menu-item"]:focus [class*="phosphor"],
+  [data-slot="dropdown-menu-item"][data-highlighted] [class*="phosphor"] {
+    color: #ffffff !important;
   }
 }
 

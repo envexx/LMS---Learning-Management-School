@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { MathRenderer } from "@/components/ui/math-renderer";
 import { ArrowLeft, Clock, CheckCircle, LockKey } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -226,7 +227,7 @@ export default function SiswaUjianDetailPage() {
               {ujian.deskripsi && (
                 <div>
                   <h3 className="font-semibold mb-2">Deskripsi</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{ujian.deskripsi}</p>
+                  <MathRenderer content={ujian.deskripsi} className="text-muted-foreground" />
                 </div>
               )}
 
@@ -304,7 +305,7 @@ export default function SiswaUjianDetailPage() {
                 <p className="text-sm text-muted-foreground mb-1">
                   {isPG ? "Pilihan Ganda" : "Essay"}
                 </p>
-                <p className="text-lg whitespace-pre-wrap">{currentQ.pertanyaan}</p>
+                <MathRenderer content={currentQ.pertanyaan || ""} className="text-lg" />
               </div>
             </div>
 
@@ -319,7 +320,7 @@ export default function SiswaUjianDetailPage() {
                     <RadioGroupItem value={option} id={`${currentQ.id}-${option}`} />
                     <Label htmlFor={`${currentQ.id}-${option}`} className="flex-1 cursor-pointer">
                       <span className="font-semibold mr-2">{option}.</span>
-                      {currentQ[`opsi${option}`]}
+                      <MathRenderer content={currentQ[`opsi${option}`] || ""} className="inline" />
                     </Label>
                   </div>
                 ))}

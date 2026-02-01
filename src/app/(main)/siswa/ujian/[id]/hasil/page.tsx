@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { MathRenderer } from "@/components/ui/math-renderer";
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -188,7 +189,7 @@ export default function SiswaUjianHasilPage() {
                       {index + 1}
                     </span>
                     <div className="flex-1">
-                      <p className="font-medium mb-3">{soal.pertanyaan}</p>
+                      <MathRenderer content={soal.pertanyaan || ""} className="font-medium mb-3" />
                       
                       <div className="space-y-2">
                         {['A', 'B', 'C', 'D'].map((option) => {
@@ -209,7 +210,7 @@ export default function SiswaUjianHasilPage() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <span className="font-semibold">{option}.</span>
-                                  <span>{soal[`opsi${option}`]}</span>
+                                  <MathRenderer content={soal[`opsi${option}`] || ""} className="inline" />
                                 </div>
                                 {isCorrectAnswer && (
                                   <CheckCircle className="w-5 h-5 text-green-600" weight="fill" />
@@ -248,7 +249,7 @@ export default function SiswaUjianHasilPage() {
                       {soalPG.length + index + 1}
                     </span>
                     <div className="flex-1">
-                      <p className="font-medium mb-3">{soal.pertanyaan}</p>
+                      <MathRenderer content={soal.pertanyaan || ""} className="font-medium mb-3" />
                       <div className="p-4 bg-gray-50 rounded-lg">
                         <p className="text-sm text-muted-foreground mb-1">Jawaban Anda:</p>
                         <p className="whitespace-pre-wrap">{userAnswer || "-"}</p>

@@ -10,6 +10,7 @@ import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Providers } from "@/app/providers";
+import { MathJaxProvider } from "@/components/mathjax-provider";
 
 import "./globals.css";
 
@@ -44,6 +45,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ThemeBootScript />
       </head>
       <body className={`${fontVars} min-h-screen antialiased`}>
+        {/* MathJax for LaTeX rendering */}
+        <MathJaxProvider />
         <Providers>
           <AuthProvider>
             <PreferencesStoreProvider

@@ -66,7 +66,7 @@ export default function KartuPelajarPage() {
   const generateQRCode = async (nisn: string) => {
     try {
       const qrDataUrl = await QRCode.toDataURL(nisn, {
-        width: 200,
+        width: 300,
         margin: 1,
         color: {
           dark: '#000000',
@@ -102,10 +102,10 @@ export default function KartuPelajarPage() {
       link.href = dataUrl;
       link.click();
 
-      toast.success(`Kartu pelajar ${siswa.nama} berhasil diexport`);
+      toast.success(`Kartu absensi ${siswa.nama} berhasil diexport`);
     } catch (error) {
       console.error('Error exporting card:', error);
-      toast.error(`Gagal export kartu pelajar: ${error}`);
+      toast.error(`Gagal export kartu absensi: ${error}`);
     } finally {
       setIsExporting(false);
     }
@@ -129,7 +129,7 @@ export default function KartuPelajarPage() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Kartu Pelajar - ${siswa.nama}</title>
+          <title>Kartu Absensi - ${siswa.nama}</title>
           <style>
             @page {
               size: 600px 350px;
@@ -166,7 +166,7 @@ export default function KartuPelajarPage() {
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
-        toast.success(`Kartu pelajar ${siswa.nama} siap dicetak`);
+        toast.success(`Kartu absensi ${siswa.nama} siap dicetak`);
       }, 500);
     };
   };
@@ -183,11 +183,11 @@ export default function KartuPelajarPage() {
     }
 
     setIsExporting(true);
-    toast.info(`Mengexport ${filteredSiswa.length} kartu pelajar...`);
+    toast.info(`Mengexport ${filteredSiswa.length} kartu absensi...`);
 
     try {
       const zip = new JSZip();
-      const folder = zip.folder('kartu-pelajar');
+      const folder = zip.folder('kartu-absensi');
 
       for (let i = 0; i < filteredSiswa.length; i++) {
         const s = filteredSiswa[i];
@@ -244,15 +244,15 @@ export default function KartuPelajarPage() {
         ? 'semua-kelas' 
         : kelasList.find((k: any) => k.id === selectedKelas)?.nama || 'kelas';
       
-      link.download = `kartu-pelajar-${kelasName}.zip`;
+      link.download = `kartu-absensi-${kelasName}.zip`;
       link.href = URL.createObjectURL(content);
       link.click();
 
-      toast.success(`${filteredSiswa.length} kartu pelajar berhasil diexport`);
+      toast.success(`${filteredSiswa.length} kartu absensi berhasil diexport`);
       setPreviewSiswa(null);
     } catch (error) {
       console.error('Error exporting cards:', error);
-      toast.error(`Gagal export kartu pelajar: ${error}`);
+      toast.error(`Gagal export kartu absensi: ${error}`);
     } finally {
       setIsExporting(false);
     }
@@ -271,8 +271,8 @@ export default function KartuPelajarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Kartu Pelajar</h1>
-          <p className="text-muted-foreground">Kelola dan cetak kartu pelajar siswa</p>
+          <h1 className="text-3xl font-bold">Kartu Absensi</h1>
+          <p className="text-muted-foreground">Kelola dan cetak kartu absensi siswa</p>
         </div>
         <Button 
           onClick={exportAllCardsAsZIP} 
@@ -353,9 +353,9 @@ export default function KartuPelajarPage() {
       <Dialog open={!!previewSiswa} onOpenChange={(open) => !open && setPreviewSiswa(null)}>
         <DialogContent style={{ maxWidth: '672px' }}>
           <DialogHeader>
-            <DialogTitle>Preview Kartu Pelajar</DialogTitle>
+            <DialogTitle>Preview Kartu Absensi</DialogTitle>
             <DialogDescription>
-              Kartu pelajar untuk {previewSiswa?.nama}
+              Kartu absensi untuk {previewSiswa?.nama}
             </DialogDescription>
           </DialogHeader>
 
@@ -508,7 +508,7 @@ function StudentCard({
             <h2 style={{ fontSize: '24px', fontWeight: 'bold', lineHeight: '1.2' }}>
               {sekolah?.nama || 'SMP NEGERI 1'}
             </h2>
-            <p style={{ fontSize: '14px', opacity: 0.9 }}>Kartu Pelajar</p>
+            <p style={{ fontSize: '14px', opacity: 0.9 }}>Kartu Absensi</p>
           </div>
         </div>
 
@@ -547,8 +547,8 @@ function StudentCard({
           {/* QR Code */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ 
-              width: '128px', 
-              height: '128px', 
+              width: '180px', 
+              height: '180px', 
               background: 'white', 
               borderRadius: '8px', 
               padding: '8px', 

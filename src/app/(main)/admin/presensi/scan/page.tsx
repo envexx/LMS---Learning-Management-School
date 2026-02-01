@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { ArrowLeft, Camera, CameraSlash, CheckCircle, XCircle } from "@phosphor-
 import { toast } from "sonner";
 import Webcam from "react-webcam";
 import jsQR from "jsqr";
+import { useSiswa } from "@/hooks/useSWR";
 
 interface ScannedStudent {
   nisn: string;
@@ -16,6 +17,7 @@ interface ScannedStudent {
   kelas: string;
   waktu: string;
   status: string;
+  tipe?: string;
 }
 
 export default function ScanPresensiPage() {
@@ -25,6 +27,30 @@ export default function ScanPresensiPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedStudents, setScannedStudents] = useState<ScannedStudent[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Load semua data siswa ke cache SWR
+  const { data: siswaData, isLoading: siswaLoading } = useSiswa('all');
+  
+  // Cache siswa dalam Map untuk akses cepat berdasarkan NISN
+  const [siswaCache, setSiswaCache] = useState<Map<string, any>>(new Map());
+  
+  useEffect(() => {
+    const siswa = (siswaData as any)?.data;
+    if (siswa && Array.isArray(siswa)) {
+      const cache = new Map();
+      siswa.forEach((siswa: any) => {
+        cache.set(siswa.nisn, {
+          id: siswa.id,
+          nisn: siswa.nisn,
+          nama: siswa.nama,
+          kelas: siswa.kelas?.nama || '',
+          namaWali: siswa.namaWali,
+          noTelpWali: siswa.noTelpWali,
+        });
+      });
+      setSiswaCache(cache);
+    }
+  }, [siswaData]);
 
   const playAudio = () => {
     if (audioRef.current) {
@@ -80,10 +106,20 @@ export default function ScanPresensiPage() {
   const handleQRCodeDetected = async (nisn: string) => {
     if (isProcessing) return;
 
-    // Check if already scanned
+    // Check if already scanned today
     const alreadyScanned = scannedStudents.find(s => s.nisn === nisn);
     if (alreadyScanned) {
-      toast.warning(`${alreadyScanned.nama} sudah di-scan sebelumnya`);
+      // Ambil data dari cache untuk menampilkan nama
+      const siswaData = siswaCache.get(nisn);
+      const nama = siswaData?.nama || nisn;
+      toast.warning(`${nama} sudah di-scan sebelumnya`);
+      return;
+    }
+
+    // Cek apakah siswa ada di cache
+    const siswaData = siswaCache.get(nisn);
+    if (!siswaData && !siswaLoading) {
+      toast.error('Siswa tidak ditemukan');
       return;
     }
 
@@ -102,16 +138,22 @@ export default function ScanPresensiPage() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        const tipe = result.data.tipe || 'masuk';
+        const waktu = result.data.waktu || new Date().toLocaleTimeString('id-ID');
+        
         const newStudent: ScannedStudent = {
           nisn: result.data.siswa.nisn,
           nama: result.data.siswa.nama,
           kelas: result.data.siswa.kelas.nama,
-          waktu: new Date().toLocaleTimeString('id-ID'),
+          waktu: waktu,
           status: result.data.status,
+          tipe: tipe,
         };
 
         setScannedStudents(prev => [newStudent, ...prev]);
-        toast.success(`✅ ${newStudent.nama} - Hadir`);
+        
+        const tipeText = tipe === 'masuk' ? 'Masuk' : 'Pulang';
+        toast.success(`✅ ${newStudent.nama} - ${tipeText} (${waktu})`);
         playAudio();
       } else {
         toast.error(result.error || 'Gagal mencatat presensi');
@@ -140,8 +182,8 @@ export default function ScanPresensiPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Scan Presensi Pagi</h1>
-            <p className="text-muted-foreground">Scan QR code kartu pelajar untuk presensi pagi hari</p>
+            <h1 className="text-3xl font-bold">Scan Presensi</h1>
+            <p className="text-muted-foreground">Scan QR code kartu absensi untuk presensi masuk/pulang</p>
           </div>
         </div>
       </div>
@@ -214,9 +256,10 @@ export default function ScanPresensiPage() {
               </div>
 
               <div className="text-sm text-muted-foreground space-y-1">
-                <p>• Arahkan kamera ke QR code pada kartu pelajar</p>
+                <p>• Arahkan kamera ke QR code pada kartu absensi</p>
                 <p>• Pastikan QR code terlihat jelas dan tidak blur</p>
-                <p>• Sistem akan otomatis mendeteksi dan mencatat presensi</p>
+                <p>• Sistem akan otomatis mendeteksi dan mencatat presensi (masuk/pulang)</p>
+                <p>• Pesan notifikasi akan dikirim ke WhatsApp orang tua</p>
               </div>
             </CardContent>
           </Card>
@@ -250,9 +293,14 @@ export default function ScanPresensiPage() {
                         <p className="text-xs text-muted-foreground">
                           {student.kelas} • {student.nisn}
                         </p>
-                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                          {student.waktu}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={student.tipe === 'masuk' ? 'default' : 'secondary'} className="text-xs">
+                            {student.tipe === 'masuk' ? 'Masuk' : 'Pulang'}
+                          </Badge>
+                          <p className="text-xs text-green-600 dark:text-green-400">
+                            {student.waktu}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}

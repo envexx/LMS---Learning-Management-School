@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, GraduationCap } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Eye, EyeOff, GraduationCap, QrCode } from "lucide-react";
 import Image from "next/image";
+import QRCode from "qrcode";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,6 +18,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [sessionId, setSessionId] = useState<string>("");
+  const [deviceDetected, setDeviceDetected] = useState<{ type: string; platform: string } | null>(null);
   const { login } = useAuth(false);
 
   useEffect(() => {
@@ -34,6 +41,54 @@ export default function LoginPage() {
       })
       .catch(err => console.error('Error fetching school info:', err));
   }, []);
+
+  // Polling untuk check device detection
+  useEffect(() => {
+    if (!showQRDialog || !sessionId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/login/scan-status?sessionId=${sessionId}`);
+        const data = await response.json();
+        
+        if (data.success && data.detected) {
+          setDeviceDetected(data.device);
+          clearInterval(interval);
+          toast.success(`Device terdeteksi: ${data.device.platform === 'android' ? 'Android' : 'App'}`);
+        }
+      } catch (error) {
+        console.error('Error checking scan status:', error);
+      }
+    }, 2000); // Check every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [showQRDialog, sessionId]);
+
+  const handleTestButtonClick = async () => {
+    try {
+      // Generate session ID
+      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setSessionId(newSessionId);
+      setDeviceDetected(null);
+
+      // Generate QR code dengan URL yang akan di-scan
+      const qrData = `${window.location.origin}/api/login/scan?sessionId=${newSessionId}`;
+      const qrDataUrl = await QRCode.toDataURL(qrData, {
+        width: 300,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      });
+
+      setQrCodeDataUrl(qrDataUrl);
+      setShowQRDialog(true);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast.error('Gagal membuat QR code');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,9 +190,74 @@ export default function LoginPage() {
             <div className="text-sm text-center text-muted-foreground mt-4">
               <p className="font-medium">Gunakan email yang terdaftar di sistem</p>
             </div>
+
+            <div className="mt-4 pt-4 border-t">
+              <Button
+                type="button"
+                onClick={handleTestButtonClick}
+                variant="outline"
+                className="w-full"
+              >
+                <QrCode className="w-4 h-4 mr-2" />
+                Test QR Code
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
+
+      {/* QR Code Dialog */}
+      <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Scan QR Code</DialogTitle>
+            <DialogDescription>
+              Scan QR code ini dengan device Anda untuk mendeteksi platform
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 py-4">
+            {qrCodeDataUrl && (
+              <div className="p-4 bg-white rounded-lg">
+                <img src={qrCodeDataUrl} alt="QR Code" className="w-64 h-64" />
+              </div>
+            )}
+            {deviceDetected ? (
+              <div className="w-full p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-green-800">
+                  ✓ Device Terdeteksi!
+                </p>
+                <p className="text-sm text-green-600 mt-1">
+                  <strong>Platform:</strong> {
+                    deviceDetected.platform === 'android' ? 'Android' :
+                    deviceDetected.platform === 'ios' ? 'iOS' :
+                    deviceDetected.platform === 'windows' ? 'Windows' :
+                    deviceDetected.platform === 'mac' ? 'macOS' :
+                    deviceDetected.platform === 'linux' ? 'Linux' :
+                    deviceDetected.platform
+                  }
+                </p>
+                <p className="text-sm text-green-600">
+                  <strong>Type:</strong> {
+                    deviceDetected.type === 'app' ? 'App' :
+                    deviceDetected.type === 'mobile' ? 'Mobile Browser' :
+                    deviceDetected.type === 'desktop' ? 'Desktop Browser' :
+                    deviceDetected.type
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-600">
+                  Menunggu scan QR code...
+                </p>
+                <p className="text-xs text-blue-500 mt-1">
+                  Buka kamera dan scan QR code di atas
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -44,33 +44,33 @@ const menuItems = [
   {
     title: "Pembelajaran",
     items: [
-      {
-        title: "Jadwal Mengajar",
-        url: "/guru/jadwal",
-        icon: Calendar,
-        disabled: true,
-        badge: "Dalam Pengembangan",
-      },
-      {
-        title: "Penilaian Siswa",
-        url: "/guru/nilai",
-        icon: ClipboardList,
-        disabled: true,
-        badge: "Dalam Pengembangan",
-      },
-      {
-        title: "Materi Pembelajaran",
-        url: "/guru/materi",
-        icon: BookOpen,
-        disabled: true,
-        badge: "Dalam Pengembangan",
-      },
-      {
-        title: "Tugas",
-        url: "/guru/tugas",
-        icon: ClipboardCheck,
-        disabled: false,
-      },
+      // {
+      //   title: "Jadwal Mengajar",
+      //   url: "/guru/jadwal",
+      //   icon: Calendar,
+      //   disabled: true,
+      //   badge: "Dalam Pengembangan",
+      // },
+      // {
+      //   title: "Penilaian Siswa",
+      //   url: "/guru/nilai",
+      //   icon: ClipboardList,
+      //   disabled: true,
+      //   badge: "Dalam Pengembangan",
+      // },
+      // {
+      //   title: "Materi Pembelajaran",
+      //   url: "/guru/materi",
+      //   icon: BookOpen,
+      //   disabled: true,
+      //   badge: "Dalam Pengembangan",
+      // },
+      // {
+      //   title: "Tugas",
+      //   url: "/guru/tugas",
+      //   icon: ClipboardCheck,
+      //   disabled: false,
+      // },
       {
         title: "Ujian",
         url: "/guru/ujian",
@@ -132,33 +132,26 @@ export function GuruSidebar() {
             {section.title && <SidebarGroupLabel>{section.title}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {item.disabled ? (
-                      <SidebarMenuButton 
-                        disabled 
-                        className="opacity-50 cursor-not-allowed"
-                        title={item.badge}
-                      >
-                        <Construction className="w-4 h-4" />
-                        <span>{item.title}</span>
-                        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">
-                          Dev
-                        </span>
-                      </SidebarMenuButton>
-                    ) : (
+                {section.items.map((item) => {
+                  // Skip disabled items (commented out routes)
+                  if (item.disabled) {
+                    return null;
+                  }
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)}>
                         <a href={item.url} className={cn(
-                          "hover:bg-accent hover:text-accent-foreground transition-colors",
-                          isActive(item.url) && "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] !text-white font-medium [&>svg]:!text-white hover:opacity-90"
+                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                          isActive(item.url) && "!bg-[#165DFB] !text-white !font-medium [&>svg]:!text-white hover:!bg-[#165DFB]/90 data-[active=true]:!bg-[#165DFB] data-[active=true]:!text-white"
                         )}>
                           <item.icon className="w-4 h-4" />
                           <span>{item.title}</span>
                         </a>
                       </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -169,8 +162,8 @@ export function GuruSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive("/guru/settings")}>
               <a href="/guru/settings" className={cn(
-                "hover:bg-accent hover:text-accent-foreground transition-colors",
-                isActive("/guru/settings") && "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] !text-white font-medium [&>svg]:!text-white hover:opacity-90"
+                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                isActive("/guru/settings") && "!bg-[#165DFB] !text-white !font-medium [&>svg]:!text-white hover:!bg-[#165DFB]/90 data-[active=true]:!bg-[#165DFB] data-[active=true]:!text-white"
               )}>
                 <Settings className="w-4 h-4" />
                 <span>Pengaturan</span>

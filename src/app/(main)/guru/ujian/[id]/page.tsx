@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { MathRenderer } from "@/components/ui/math-renderer";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, FileText, ListChecks, Article } from "@phosphor-icons/react";
 import { format } from "date-fns";
@@ -69,76 +70,91 @@ export default function UjianDetailPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>Informasi Ujian</CardTitle>
+          <CardTitle className="text-xl text-white">Informasi Ujian</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Deskripsi</p>
-            <p className="text-sm mt-1">{ujian.deskripsi || "-"}</p>
+            <p className="text-sm font-semibold text-blue-50 mb-2">Deskripsi</p>
+            {ujian.deskripsi ? (
+              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
+                <MathRenderer content={ujian.deskripsi} className="text-sm leading-relaxed text-white" />
+              </div>
+            ) : (
+              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
+                <p className="text-sm text-blue-50">Tidak ada deskripsi</p>
+              </div>
+            )}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <span className={`inline-block mt-1 px-2 py-1 rounded-full text-xs ${
-                ujian.status === "aktif" ? "bg-green-100 text-green-700" :
-                ujian.status === "draft" ? "bg-orange-100 text-orange-700" :
-                "bg-gray-100 text-gray-700"
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-sm font-semibold text-blue-50 mb-2">Status</p>
+              <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+                ujian.status === "aktif" ? "bg-green-100 text-green-700 border border-green-200" :
+                ujian.status === "draft" ? "bg-orange-100 text-orange-700 border border-orange-200" :
+                "bg-gray-100 text-gray-700 border border-gray-200"
               }`}>
                 {ujian.status === "aktif" ? "Aktif" : ujian.status === "draft" ? "Draft" : "Selesai"}
               </span>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Soal</p>
-              <p className="text-sm mt-1 font-semibold">{soalPG.length + soalEssay.length}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-sm font-semibold text-blue-50 mb-2">Total Soal</p>
+              <p className="text-2xl font-bold text-white">{soalPG.length + soalEssay.length}</p>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Acak Soal</p>
-              <p className="text-sm mt-1">{ujian.shuffleQuestions ? "Ya" : "Tidak"}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-sm font-semibold text-blue-50 mb-2">Acak Soal</p>
+              <p className="text-lg font-medium text-white">{ujian.shuffleQuestions ? "Ya" : "Tidak"}</p>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Tampilkan Nilai</p>
-              <p className="text-sm mt-1">{ujian.showScore ? "Ya" : "Tidak"}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-sm font-semibold text-blue-50 mb-2">Tampilkan Nilai</p>
+              <p className="text-lg font-medium text-white">{ujian.showScore ? "Ya" : "Tidak"}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {soalPG.length > 0 && (
-        <Card>
+        <Card className="bg-white border shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <ListChecks className="w-5 h-5 text-blue-600" weight="duotone" />
-              <CardTitle>Soal Pilihan Ganda ({soalPG.length})</CardTitle>
+              <ListChecks className="w-5 h-5 text-gray-700" weight="duotone" />
+              <CardTitle className="text-gray-900">Soal Pilihan Ganda ({soalPG.length})</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {soalPG.map((soal: any) => (
-              <div key={soal.id} className="p-4 border rounded-lg space-y-3">
+              <div key={soal.id} className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
                 <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm border border-gray-300">
                     {soal.nomor}
                   </span>
                   <div className="flex-1">
-                    <p className="font-medium">{soal.pertanyaan}</p>
+                    <MathRenderer content={soal.pertanyaan || ""} className="font-medium text-gray-900" />
                   </div>
                 </div>
                 <div className="ml-11 space-y-2">
                   {['A', 'B', 'C', 'D'].map((option, idx) => (
                     <div 
                       key={option} 
-                      className={`p-2 rounded border ${
+                      className={`p-3 rounded-lg border flex items-start gap-2 ${
                         soal.kunciJawaban === option 
                           ? 'bg-green-50 border-green-300' 
-                          : 'bg-gray-50'
+                          : 'bg-white border-gray-200'
                       }`}
                     >
-                      <span className="font-medium text-sm">{option}. </span>
-                      <span className="text-sm">{soal[`opsi${option}`]}</span>
-                      {soal.kunciJawaban === option && (
-                        <span className="ml-2 text-xs text-green-600 font-semibold">(Kunci Jawaban)</span>
-                      )}
+                      <span className={`font-medium text-sm flex-shrink-0 ${
+                        soal.kunciJawaban === option ? 'text-green-700' : 'text-gray-700'
+                      }`}>{option}.</span>
+                      <div className="flex-1 flex items-center gap-2">
+                        <MathRenderer content={soal[`opsi${option}`] || ""} className={`text-sm ${
+                          soal.kunciJawaban === option ? 'text-gray-900' : 'text-gray-700'
+                        }`} />
+                        {soal.kunciJawaban === option && (
+                          <span className="text-xs text-green-600 font-semibold whitespace-nowrap">(Kunci Jawaban)</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -149,27 +165,27 @@ export default function UjianDetailPage() {
       )}
 
       {soalEssay.length > 0 && (
-        <Card>
+        <Card className="bg-white border shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Article className="w-5 h-5 text-purple-600" weight="duotone" />
-              <CardTitle>Soal Essay ({soalEssay.length})</CardTitle>
+              <Article className="w-5 h-5 text-gray-700" weight="duotone" />
+              <CardTitle className="text-gray-900">Soal Essay ({soalEssay.length})</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {soalEssay.map((soal: any) => (
-              <div key={soal.id} className="p-4 border rounded-lg space-y-3">
+              <div key={soal.id} className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
                 <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-semibold text-sm">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm border border-gray-300">
                     {soal.nomor}
                   </span>
                   <div className="flex-1">
-                    <p className="font-medium">{soal.pertanyaan}</p>
+                    <MathRenderer content={soal.pertanyaan || ""} className="font-medium text-gray-900" />
                   </div>
                 </div>
                 <div className="ml-11 p-3 bg-green-50 border border-green-200 rounded">
                   <p className="text-xs font-semibold text-green-700 mb-1">Kunci Jawaban:</p>
-                  <p className="text-sm text-green-900 whitespace-pre-wrap">{soal.kunciJawaban}</p>
+                  <MathRenderer content={soal.kunciJawaban || ""} className="text-sm text-green-900" />
                 </div>
               </div>
             ))}
