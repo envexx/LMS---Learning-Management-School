@@ -4,24 +4,47 @@
 
 1. **Node.js Version**: Coolify menggunakan Node.js 18 (EOL), tapi project memerlukan Node.js 20+
 2. **Secrets in Dockerfile**: Nixpacks auto-generate Dockerfile dengan ARG/ENV untuk secrets
+3. **Nixpacks Cache**: Nixpacks masih menggunakan cache lama dengan format `nodejs-20_x` yang tidak valid
 
-## ✅ Solusi
+## ✅ Solusi (2 Opsi)
 
-### 1. Set Node.js Version di Coolify
+### OPSI 1: Gunakan Custom Dockerfile (RECOMMENDED)
 
-**Cara 1: Via Environment Variable (Recommended)**
+Dockerfile custom sudah dibuat dan aman (tidak ada secrets di build time).
+
+**Di Coolify Dashboard:**
+
+1. Buka aplikasi Anda
+2. Pergi ke **Configuration** → **Build Pack**
+3. Ganti dari `nixpacks` ke `dockerfile`
+4. Dockerfile path: `Dockerfile` (default)
+5. **PENTING**: Set semua Environment Variables di Settings → Environment Variables:
+   ```
+   DATABASE_URL=postgres://...
+   SESSION_SECRET=your-secret-key-min-32-chars
+   R2_ACCOUNT_ID=6d16bbd1d7b7b0aed592e9d62822a01e
+   R2_ACCESS_KEY_ID=your-r2-access-key
+   R2_SECRET_ACCESS_KEY=your-r2-secret-key
+   R2_BUCKET_NAME=your-bucket-name
+   R2_PUBLIC_URL=https://pub-48d5f2d21ee94c799a380b5db2425529.r2.dev
+   WHATSAPP_API_KEY=your-whatsapp-key
+   ANTHROPIC_API_KEY=your-anthropic-key
+   CRON_SECRET=your-cron-secret
+   ```
+6. Save dan redeploy
+
+### OPSI 2: Fix Nixpacks (Lebih Kompleks)
+
 1. Buka Coolify Dashboard
 2. Pilih aplikasi Anda
-3. Buka **Settings** → **Environment Variables**
-4. Tambahkan environment variable:
+3. **Configuration** → **General** → Clear Build Cache
+4. **Settings** → **Environment Variables**
+5. Tambahkan environment variable:
    ```
    NIXPACKS_NODE_VERSION=20
    ```
-5. Save dan redeploy
-
-**Cara 2: File sudah dibuat**
-- File `.nvmrc` dan `.node-version` sudah dibuat dengan value `20`
-- Nixpacks akan membaca file ini secara otomatis
+   (PENTING: Nilai harus `20`, BUKAN `nodejs-20_x` atau `nodejs-20`)
+6. Save dan redeploy
 
 ### 2. Mengatasi Secrets Warning
 
