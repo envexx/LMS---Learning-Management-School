@@ -16,20 +16,27 @@ Pastikan environment variables sudah di-set di Coolify:
    - Buka Coolify Dashboard
    - Pilih aplikasi Anda
    - Klik **Terminal** (tab di sebelah Logs)
-   
-2. **Jalankan Migration**
+
+2. **Pastikan di direktori /app**
    ```bash
-   npx prisma migrate deploy
+   cd /app
+   pwd
    ```
    
-3. **Jalankan Seeder**
+3. **Jalankan Migration**
    ```bash
-   npx prisma db seed
+   ./node_modules/.bin/prisma migrate deploy
    ```
    
-   Atau gunakan script custom:
+4. **Jalankan Seeder**
    ```bash
-   npx tsx prisma/seed.ts
+   ./node_modules/.bin/tsx prisma/seed.ts
+   ```
+
+**Jika error "not found", gunakan npx:**
+   ```bash
+   npx --yes prisma migrate deploy
+   npx --yes tsx prisma/seed.ts
    ```
 
 ---
@@ -70,24 +77,24 @@ Pastikan environment variables sudah di-set di Coolify:
 
 ### Metode 3: Otomatis saat Deployment (Startup Command)
 
-⚠️ **PERHATIAN**: Metode ini akan menjalankan migration & seed otomatis setiap deployment.
-Untuk production, lebih baik gunakan Metode 1 atau 2 secara manual.
+⚠️ **PERHATIAN**: Metode ini akan menjalankan migration otomatis setiap deployment.
+Untuk production, lebih baik gunakan Metode 1 atau 2 secara manual untuk seeding.
 
 **Di Coolify Dashboard:**
 
-1. Pergi ke **Configuration** → **Build Pack**
-2. Scroll ke **Custom Start Command**
-3. Masukkan command:
+1. Pergi ke **Configuration** → **General**
+2. Scroll ke **Post Deployment Command**
+3. Masukkan command (hanya migration, tanpa seeding):
    ```bash
-   npx prisma migrate deploy && npx prisma db seed && node server.js
-   ```
-   
-   Atau tanpa seeding (hanya migration):
-   ```bash
-   npx prisma migrate deploy && node server.js
+   cd /app && ./node_modules/.bin/prisma migrate deploy
    ```
 
 4. Save dan redeploy
+
+**Atau jika ingin juga auto-seed (TIDAK DIREKOMENDASIKAN untuk production):**
+   ```bash
+   cd /app && ./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx prisma/seed.ts
+   ```
 
 ---
 
@@ -97,37 +104,44 @@ Untuk production, lebih baik gunakan Metode 1 atau 2 secara manual.
 
 ```bash
 # Deploy pending migrations (production)
-npx prisma migrate deploy
+./node_modules/.bin/prisma migrate deploy
 
 # Check migration status
-npx prisma migrate status
+./node_modules/.bin/prisma migrate status
 
 # Generate Prisma Client (jika belum ter-generate)
-npx prisma generate
+./node_modules/.bin/prisma generate
 ```
 
 ### Seeder Commands
 
 ```bash
 # Main seeder (prisma/seed.ts)
-npx prisma db seed
-# atau
-npx tsx prisma/seed.ts
+./node_modules/.bin/tsx prisma/seed.ts
 
 # Custom seeders
-npx tsx prisma/seed-info-masuk.ts
-npx tsx prisma/seed-dummy-ujian.ts
+./node_modules/.bin/tsx prisma/seed-info-masuk.ts
+./node_modules/.bin/tsx prisma/seed-dummy-ujian.ts
 ```
 
 ### Database Commands
 
 ```bash
 # Check database connection
-npx prisma db pull --print
+./node_modules/.bin/prisma db pull --print
+
+# Introspect database schema
+./node_modules/.bin/prisma db pull
 
 # Reset database (DANGER: Deletes all data!)
 # DON'T USE IN PRODUCTION!
-npx prisma migrate reset
+./node_modules/.bin/prisma migrate reset
+```
+
+**Alternatif dengan npx (download on-the-fly):**
+```bash
+npx --yes prisma@7.3.0 migrate deploy
+npx --yes tsx@4.21.0 prisma/seed.ts
 ```
 
 ---
@@ -174,13 +188,21 @@ Setelah menjalankan seeder, gunakan credentials berikut:
 
 ### Error: "Prisma CLI not found"
 
+**Solusi 1: Gunakan path lengkap**
 ```bash
-# Install dependencies dulu
-npm ci
-
-# Generate Prisma Client
-npx prisma generate
+cd /app
+./node_modules/.bin/prisma migrate deploy
 ```
+
+**Solusi 2: Gunakan npx dengan --yes**
+```bash
+npx --yes prisma@7.3.0 migrate deploy
+```
+
+**Solusi 3: Jika masih error, redeploy dengan Dockerfile terbaru**
+- Dockerfile sudah diupdate untuk include Prisma CLI
+- Commit dan push perubahan
+- Redeploy di Coolify
 
 ### Error: "Can't reach database server"
 
