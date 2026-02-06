@@ -8,7 +8,7 @@
 
 ## ✅ Solusi (2 Opsi)
 
-### OPSI 1: Gunakan Custom Dockerfile (RECOMMENDED)
+### OPSI 1: Gunakan Custom Dockerfile (RECOMMENDED) ⭐
 
 Dockerfile custom sudah dibuat dan aman (tidak ada secrets di build time).
 
@@ -20,33 +20,66 @@ Dockerfile custom sudah dibuat dan aman (tidak ada secrets di build time).
 4. Dockerfile path: `Dockerfile` (default)
 5. **PENTING**: Set semua Environment Variables di Settings → Environment Variables:
    ```
-   DATABASE_URL=postgres://...
+   DATABASE_URL=postgres://postgres:T1ZjVSlg9DuhDVoDqq6EmGC81zufSuyyTGhpbX3DejKzZyCSLxsCCl8twkMaZj29@31.97.67.141:5436/postgres
    SESSION_SECRET=your-secret-key-min-32-chars
    R2_ACCOUNT_ID=6d16bbd1d7b7b0aed592e9d62822a01e
    R2_ACCESS_KEY_ID=your-r2-access-key
    R2_SECRET_ACCESS_KEY=your-r2-secret-key
    R2_BUCKET_NAME=your-bucket-name
    R2_PUBLIC_URL=https://pub-48d5f2d21ee94c799a380b5db2425529.r2.dev
-   WHATSAPP_API_KEY=your-whatsapp-key
-   ANTHROPIC_API_KEY=your-anthropic-key
-   CRON_SECRET=your-cron-secret
+   WHATSAPP_API_KEY=your-whatsapp-key (optional)
+   ANTHROPIC_API_KEY=your-anthropic-key (optional)
+   CRON_SECRET=your-cron-secret (optional)
+   DIRECT_URL=postgres://postgres:T1ZjVSlg9DuhDVoDqq6EmGC81zufSuyyTGhpbX3DejKzZyCSLxsCCl8twkMaZj29@31.97.67.141:5436/postgres
    ```
 6. Save dan redeploy
 
-### OPSI 2: Fix Nixpacks (Lebih Kompleks)
+**Mengapa Dockerfile lebih baik?**
+- ✅ Menggunakan Node.js 20 LTS yang stabil
+- ✅ Tidak ada secrets di build time (lebih aman)
+- ✅ Build lebih cepat dengan multi-stage
+- ✅ Tidak bergantung pada Nixpacks cache
 
-1. Buka Coolify Dashboard
-2. Pilih aplikasi Anda
-3. **Configuration** → **General** → Clear Build Cache
-4. **Settings** → **Environment Variables**
-5. Tambahkan environment variable:
+### OPSI 2: Fix Nixpacks Version
+
+**Masalah saat ini:** Node.js 22.11.0 tidak memenuhi requirement Prisma (perlu 22.12+)
+
+**Solusi:**
+
+1. Buka Coolify Dashboard → aplikasi Anda
+2. **Settings** → **Environment Variables**
+3. **Ubah `NIXPACKS_NODE_VERSION` dari `22` ke `20`**:
    ```
    NIXPACKS_NODE_VERSION=20
    ```
-   (PENTING: Nilai harus `20`, BUKAN `nodejs-20_x` atau `nodejs-20`)
-6. Save dan redeploy
+4. **Configuration** → **General** → Clear Build Cache (hapus cache Node.js 22.11)
+5. Save dan redeploy
 
-### 2. Mengatasi Secrets Warning
+**Catatan:** Node.js 20 LTS lebih stabil dan memenuhi semua requirement.
+
+### 2. Setup Database (Migration & Seeder)
+
+Setelah deployment berhasil, Anda perlu setup database:
+
+1. **Buka Terminal di Coolify**
+   - Dashboard → Aplikasi Anda → **Terminal** tab
+
+2. **Jalankan Migration**
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+3. **Jalankan Seeder (Optional - Initial Data)**
+   ```bash
+   npx prisma db seed
+   ```
+
+⚠️ **Catatan**: Seeder akan menghapus semua data existing dan membuat data dummy.
+Lihat file `DATABASE_SETUP.md` untuk detail lengkap.
+
+---
+
+### 3. Mengatasi Secrets Warning
 
 **Masalah**: Nixpacks auto-generate Dockerfile dengan ARG/ENV untuk secrets
 
