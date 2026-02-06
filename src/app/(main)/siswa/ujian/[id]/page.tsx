@@ -94,7 +94,7 @@ export default function SiswaUjianDetailPage() {
       // Load input modes
       const storedModes = localStorage.getItem(getInputModeStorageKey());
       if (storedModes) {
-        const parsedModes = JSON.parse(storedModes);
+        const parsedModes = JSON.parse(storedModes) as { [key: string]: 'text' | 'image' };
         setEssayInputMode(parsedModes);
       }
     } catch (error) {
@@ -597,7 +597,7 @@ export default function SiswaUjianDetailPage() {
     const newImages = { ...essayImages, [questionId]: imageSrc };
     setEssayImages(newImages);
     // Set input mode to image
-    const newModes = { ...essayInputMode, [questionId]: 'image' };
+    const newModes: { [key: string]: 'text' | 'image' } = { ...essayInputMode, [questionId]: 'image' as const };
     setEssayInputMode(newModes);
     // Save base64 image as answer
     handleAnswerChange(questionId, imageSrc, 'essay');
@@ -1050,7 +1050,8 @@ export default function SiswaUjianDetailPage() {
                       variant={essayInputMode[currentQ.id] !== 'image' ? "default" : "outline"}
                       size="sm"
                       onClick={() => {
-                        setEssayInputMode({ ...essayInputMode, [currentQ.id]: 'text' });
+                        const newModes: { [key: string]: 'text' | 'image' } = { ...essayInputMode, [currentQ.id]: 'text' as const };
+                        setEssayInputMode(newModes);
                       }}
                     >
                       <FloppyDisk className="w-4 h-4 mr-2" />
@@ -1113,7 +1114,7 @@ export default function SiswaUjianDetailPage() {
                               const newImages = { ...essayImages };
                               delete newImages[currentQ.id];
                               setEssayImages(newImages);
-                              const newModes = { ...essayInputMode, [currentQ.id]: 'text' };
+                              const newModes: { [key: string]: 'text' | 'image' } = { ...essayInputMode, [currentQ.id]: 'text' as const };
                               setEssayInputMode(newModes);
                               handleAnswerChange(currentQ.id, '', 'essay');
                               // Update localStorage
