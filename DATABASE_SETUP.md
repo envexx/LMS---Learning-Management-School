@@ -43,14 +43,23 @@ Pastikan environment variables sudah di-set di Coolify:
    ```
    
 4. **Jalankan Migration**
+   
+   **PENTING:** Gunakan Prisma CLI dari node_modules lokal (bukan npx):
    ```bash
-   npx --yes prisma@7.3.0 migrate deploy
+   ./node_modules/.bin/prisma migrate deploy
+   ```
+   
+   Atau jika error, specify schema path:
+   ```bash
+   npx --yes prisma@7.3.0 migrate deploy --schema=./prisma/schema.prisma
    ```
    
 5. **Jalankan Seeder**
    ```bash
    npx --yes tsx@4.21.0 prisma/seed.ts
    ```
+   
+   **Jika error SSL:** Database tidak support SSL. Sudah diperbaiki di `prisma/seed.ts`.
 
 ---
 
