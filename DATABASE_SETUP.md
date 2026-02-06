@@ -17,26 +17,39 @@ Pastikan environment variables sudah di-set di Coolify:
    - Pilih aplikasi Anda
    - Klik **Terminal** (tab di sebelah Logs)
 
-2. **Pastikan di direktori /app**
+2. **Cek Environment Variables**
    ```bash
    cd /app
-   pwd
+   echo $DATABASE_URL
    ```
    
-3. **Jalankan Migration**
+   **Jika kosong, environment variables tidak loaded.** Ada 2 cara:
+
+3a. **Cara 1: Export Manual (Quick Fix)**
    ```bash
-   ./node_modules/.bin/prisma migrate deploy
-   ```
+   export DATABASE_URL="postgres://postgres:T1ZjVSlg9DuhDVoDqq6EmGC81zufSuyyTGhpbX3DejKzZyCSLxsCCl8twkMaZj29@31.97.67.141:5436/postgres"
    
-4. **Jalankan Seeder**
-   ```bash
-   ./node_modules/.bin/tsx prisma/seed.ts
+   # Verifikasi
+   echo $DATABASE_URL
    ```
 
-**Jika error "not found", gunakan npx:**
+3b. **Cara 2: Load dari .env (Jika ada)**
    ```bash
-   npx --yes prisma migrate deploy
-   npx --yes tsx prisma/seed.ts
+   # Buat .env file sementara
+   cat > .env << 'EOF'
+   DATABASE_URL="postgres://postgres:T1ZjVSlg9DuhDVoDqq6EmGC81zufSuyyTGhpbX3DejKzZyCSLxsCCl8twkMaZj29@31.97.67.141:5436/postgres"
+   DIRECT_URL="postgres://postgres:T1ZjVSlg9DuhDVoDqq6EmGC81zufSuyyTGhpbX3DejKzZyCSLxsCCl8twkMaZj29@31.97.67.141:5436/postgres"
+   EOF
+   ```
+   
+4. **Jalankan Migration**
+   ```bash
+   npx --yes prisma@7.3.0 migrate deploy
+   ```
+   
+5. **Jalankan Seeder**
+   ```bash
+   npx --yes tsx@4.21.0 prisma/seed.ts
    ```
 
 ---
