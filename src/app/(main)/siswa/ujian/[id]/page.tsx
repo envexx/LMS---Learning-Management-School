@@ -226,9 +226,11 @@ export default function SiswaUjianDetailPage() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Clear localStorage (answers and shuffle order)
+        // Clear ALL localStorage related to this exam (answers, shuffle order, images, input mode)
         localStorage.removeItem(storageKey);
         localStorage.removeItem(`ujian_${params.id}_shuffled_order`);
+        localStorage.removeItem(getImagesStorageKey());
+        localStorage.removeItem(getInputModeStorageKey());
         
         // Clear all timers
         Object.values(saveTimersRef.current).forEach((timer) => {
@@ -489,6 +491,12 @@ export default function SiswaUjianDetailPage() {
         
         // Check if already submitted
         if (result.data.submission && result.data.submission.submittedAt) {
+          // Clear ALL localStorage related to this exam since it's already submitted
+          localStorage.removeItem(getStorageKey());
+          localStorage.removeItem(`ujian_${params.id}_shuffled_order`);
+          localStorage.removeItem(getImagesStorageKey());
+          localStorage.removeItem(getInputModeStorageKey());
+          
           toast.info("Anda sudah mengerjakan ujian ini");
           // Redirect ke halaman hasil jika sudah di-submit
           setTimeout(() => {
@@ -925,9 +933,11 @@ export default function SiswaUjianDetailPage() {
         // Clear queue
         examQueue.clear();
         
-        // Clear localStorage
+        // Clear ALL localStorage related to this exam
         localStorage.removeItem(storageKey);
         localStorage.removeItem(`ujian_${params.id}_shuffled_order`);
+        localStorage.removeItem(getImagesStorageKey());
+        localStorage.removeItem(getInputModeStorageKey());
         
         // Clear timers
         Object.values(saveTimersRef.current).forEach((timer) => {

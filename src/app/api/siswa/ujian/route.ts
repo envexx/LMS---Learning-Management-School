@@ -52,6 +52,7 @@ export async function GET(request: Request) {
     // Access control only affects starting NEW exams, not viewing completed ones
 
     // Get ujian for siswa's kelas
+    // SECURITY: Use select to prevent sending jawabanBenar to client
     const ujian = await prisma.ujian.findMany({
       where: {
         kelas: {
@@ -61,8 +62,18 @@ export async function GET(request: Request) {
       },
       include: {
         mapel: true,
-        soalPilihanGanda: true,
-        soalEssay: true,
+        soalPilihanGanda: {
+          select: {
+            id: true,
+            // SECURITY: Don't send jawabanBenar to prevent cheating
+          },
+        },
+        soalEssay: {
+          select: {
+            id: true,
+            // SECURITY: Don't send kunciJawaban to prevent cheating
+          },
+        },
         submissions: {
           where: {
             siswaId: siswa.id,

@@ -30,6 +30,7 @@ export async function GET(
     }
 
     // Get ujian detail
+    // SECURITY: Use select to prevent sending jawabanBenar to client
     const ujian = await prisma.ujian.findFirst({
       where: {
         id,
@@ -40,9 +41,25 @@ export async function GET(
         mapel: true,
         soalPilihanGanda: {
           orderBy: { urutan: 'asc' },
+          select: {
+            id: true,
+            pertanyaan: true,
+            opsiA: true,
+            opsiB: true,
+            opsiC: true,
+            opsiD: true,
+            urutan: true,
+            // SECURITY: Don't send jawabanBenar and penjelasan to prevent cheating
+          },
         },
         soalEssay: {
           orderBy: { urutan: 'asc' },
+          select: {
+            id: true,
+            pertanyaan: true,
+            urutan: true,
+            // SECURITY: Don't send kunciJawaban to prevent cheating
+          },
         },
         submissions: {
           where: { siswaId: siswa.id },

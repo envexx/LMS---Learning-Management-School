@@ -76,13 +76,20 @@ export async function POST(
       );
     }
 
+    // ANTI-CHEAT: Detect suspicious submission patterns
+    const submittedAnswerCount = Object.keys(answers || {}).filter(key => answers[key]).length;
+    const totalPG = ujian.soalPilihanGanda.length;
+    const totalEssay = ujian.soalEssay.length;
+    const totalQuestions = totalPG + totalEssay;
+    
+    console.log('ANTI-CHEAT: Checking submission pattern');
+    console.log('- Total questions:', totalQuestions, '(PG:', totalPG, ', Essay:', totalEssay, ')');
+    console.log('- Submitted answers:', submittedAnswerCount);
+    console.log('- Answer keys received:', Object.keys(answers || {}));
+    
     // Calculate score for multiple choice
     let correctPG = 0;
-    const totalPG = ujian.soalPilihanGanda.length;
-    
-    console.log('Calculating PG score. Total soal:', totalPG);
-    console.log('Soal IDs:', ujian.soalPilihanGanda.map(s => s.id));
-    console.log('Answer keys:', Object.keys(answers || {}));
+    let suspiciousPattern = false;
     
     ujian.soalPilihanGanda.forEach((soal) => {
       const userAnswer = answers[soal.id];
@@ -91,10 +98,19 @@ export async function POST(
       }
     });
     
+    // ANTI-CHEAT: Flag suspicious perfect score or near-perfect submissions
+    // If student submitted very few answers initially but now all are correct
+    if (totalPG > 5 && correctPG > totalPG * 0.9 && submittedAnswerCount < totalQuestions * 0.5) {
+      suspiciousPattern = true;
+      console.warn('⚠️ SUSPICIOUS PATTERN DETECTED:');
+      console.warn('- Correct answers:', correctPG, '/', totalPG, '=', ((correctPG/totalPG)*100).toFixed(1) + '%');
+      console.warn('- Submitted answers:', submittedAnswerCount, '/', totalQuestions, '=', ((submittedAnswerCount/totalQuestions)*100).toFixed(1) + '%');
+      console.warn('- This pattern suggests potential cheating (access to answer key)');
+    }
+    
     console.log('Correct PG:', correctPG, 'out of', totalPG);
 
     // For essay, we'll set nilai to null and let guru grade it manually
-    const totalEssay = ujian.soalEssay.length;
     const hasEssay = totalEssay > 0;
 
     // Calculate final score (only from PG if there are essay questions)
@@ -106,6 +122,7 @@ export async function POST(
 
     console.log('Processing submission for siswa:', siswa.id, 'ujian:', id);
     console.log('Final score:', finalScore, 'Status:', hasEssay ? 'pending' : 'completed');
+    console.log('Suspicious pattern:', suspiciousPattern ? 'YES ⚠️' : 'NO');
 
     let submission;
     
