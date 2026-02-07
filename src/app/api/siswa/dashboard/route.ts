@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { refreshSession } from '@/lib/session';
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
+    // Use refreshSession to keep session alive on dashboard access (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || session.role !== 'SISWA') {
       return NextResponse.json(

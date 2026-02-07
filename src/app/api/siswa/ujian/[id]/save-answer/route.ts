@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { refreshSession } from '@/lib/session';
 
 /**
  * API endpoint untuk auto-save jawaban (bukan submit final)
@@ -16,7 +16,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const session = await getSession();
+    // Use refreshSession to keep session alive during exam (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || session.role !== 'SISWA') {
       return NextResponse.json(
@@ -224,7 +225,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const session = await getSession();
+    // Use refreshSession to keep session alive during batch save (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || session.role !== 'SISWA') {
       return NextResponse.json(

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -31,7 +32,20 @@ interface SessionResponse {
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    cache: 'no-store', // Prevent caching
+    credentials: 'include', // Include cookies
+  });
+  
+  // Handle 401 immediately
+  if (res.status === 401) {
+    return {
+      success: false,
+      isLoggedIn: false,
+      data: null,
+    };
+  }
+  
   return res.json();
 };
 
@@ -45,16 +59,37 @@ export function useAuth(requireAuth = true) {
       revalidateOnFocus: true,
       revalidateOnReconnect: true,
       shouldRetryOnError: false,
+      refreshInterval: 60000, // Check session every 60 seconds
+      dedupingInterval: 5000, // Prevent too frequent requests
     }
   );
 
   const isAuthenticated = data?.isLoggedIn || false;
   const user = data?.data || null;
 
-  // Redirect to login if auth is required but user is not authenticated
-  if (requireAuth && !isLoading && !isAuthenticated) {
-    router.push('/admin-guru');
-  }
+  // Handle session expiration with hard redirect
+  useEffect(() => {
+    if (requireAuth && !isLoading) {
+      if (!isAuthenticated || error) {
+        // Clear all storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear SWR cache
+        mutate(undefined, false);
+        
+        // Show notification only if there's an error (not on initial load)
+        if (error && data !== undefined) {
+          toast.error('Sesi Anda telah berakhir. Silakan login kembali.');
+        }
+        
+        // Hard redirect to clear all state
+        if (data !== undefined || error) {
+          window.location.href = '/admin-guru';
+        }
+      }
+    }
+  }, [isAuthenticated, isLoading, requireAuth, error, data, mutate]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -62,6 +97,7 @@ export function useAuth(requireAuth = true) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Include cookies
       });
 
       const result = await response.json();
@@ -90,14 +126,21 @@ export function useAuth(requireAuth = true) {
     try {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
+        credentials: 'include', // Include cookies
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // Clear all storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
         await mutate(undefined, false);
         toast.success('Logout berhasil');
-        router.push('/admin-guru');
+        
+        // Hard redirect to clear all state
+        window.location.href = '/admin-guru';
         return { success: true };
       } else {
         toast.error('Logout gagal');

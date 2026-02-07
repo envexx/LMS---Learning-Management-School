@@ -168,7 +168,7 @@ export default function UjianGuruPage() {
   return (
     <div className="space-y-6">
       {/* Header Card with Blue Background */}
-      <Card className="bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] border-0 shadow-lg">
+      <Card className="bg-gradient-to-br from-[#0221CD] to-[#0221CD]/80 border-0 shadow-lg">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="flex-1">

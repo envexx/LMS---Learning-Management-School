@@ -70,7 +70,7 @@ export default function UjianDetailPage() {
         </div>
       </div>
 
-      <Card className="bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] border-0 shadow-lg">
+      <Card className="bg-gradient-to-br from-[#0221CD] to-[#0221CD]/80 border-0 shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl text-white">Informasi Ujian</CardTitle>
         </CardHeader>

@@ -131,7 +131,7 @@ export default function AdminDashboard() {
               ) : (
                 activities.map((activity, index) => {
                   const colorMap: Record<string, string> = {
-                    blue: 'bg-gradient-to-r from-[#1488cc] to-[#2b32b2]',
+                    blue: 'bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80',
                     green: 'bg-green-600',
                     purple: 'bg-purple-600',
                     orange: 'bg-orange-600',
@@ -165,24 +165,24 @@ export default function AdminDashboard() {
             <div className="grid gap-2">
               <a
                 href="/admin/siswa"
-                className="p-3 border rounded-lg hover:bg-accent transition-colors"
+                className="group p-3 border rounded-lg hover:bg-accent hover:text-white transition-colors"
               >
-                <p className="font-medium text-sm">Tambah Siswa</p>
-                <p className="text-xs text-muted-foreground">Daftarkan siswa baru</p>
+                <p className="font-medium text-sm group-hover:text-white">Tambah Siswa</p>
+                <p className="text-xs text-muted-foreground group-hover:text-white/80">Daftarkan siswa baru</p>
               </a>
               <a
                 href="/admin/kelas"
-                className="p-3 border rounded-lg hover:bg-accent transition-colors"
+                className="group p-3 border rounded-lg hover:bg-accent hover:text-white transition-colors"
               >
-                <p className="font-medium text-sm">Kelola Kelas</p>
-                <p className="text-xs text-muted-foreground">Atur kelas dan siswa</p>
+                <p className="font-medium text-sm group-hover:text-white">Kelola Kelas</p>
+                <p className="text-xs text-muted-foreground group-hover:text-white/80">Atur kelas dan siswa</p>
               </a>
               <a
                 href="/admin/token-ujian"
-                className="p-3 border rounded-lg hover:bg-accent transition-colors"
+                className="group p-3 border rounded-lg hover:bg-accent hover:text-white transition-colors"
               >
-                <p className="font-medium text-sm">Token Ujian</p>
-                <p className="text-xs text-muted-foreground">Kelola akses ujian</p>
+                <p className="font-medium text-sm group-hover:text-white">Token Ujian</p>
+                <p className="text-xs text-muted-foreground group-hover:text-white/80">Kelola akses ujian</p>
               </a>
             </div>
           </CardContent>

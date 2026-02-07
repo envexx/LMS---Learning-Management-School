@@ -218,7 +218,7 @@ export default function TokenUjianPage() {
 
           {isUjianActive && (
             <div className="space-y-4">
-              <div className="p-8 border-2 border-dashed rounded-lg bg-gradient-to-br from-[#1488cc]/10 to-[#2b32b2]/10 dark:from-[#1488cc]/20 dark:to-[#2b32b2]/20">
+              <div className="p-8 border-2 border-dashed rounded-lg bg-gradient-to-br from-[#0221CD]/10 to-[#0221CD]/20 dark:from-[#0221CD]/20 dark:to-[#0221CD]/30">
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Clock className="w-4 h-4" />
@@ -227,7 +227,7 @@ export default function TokenUjianPage() {
                   
                   <div className="space-y-2">
                     <Label className="text-sm">Token Saat Ini</Label>
-                    <div className="text-6xl font-bold tracking-widest text-white font-mono p-6 bg-gradient-to-r from-[#1488cc] to-[#2b32b2] rounded-lg">
+                    <div className="text-6xl font-bold tracking-widest text-white font-mono p-6 bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 rounded-lg">
                       {isLoading ? (
                         <Loader2 className="w-12 h-12 mx-auto animate-spin" />
                       ) : (
@@ -249,7 +249,7 @@ export default function TokenUjianPage() {
 
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-gradient-to-r from-[#1488cc] to-[#2b32b2] h-2 rounded-full transition-all duration-1000"
+                      className="bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${(timeRemaining / 1800) * 100}%` }}
                     />
                   </div>

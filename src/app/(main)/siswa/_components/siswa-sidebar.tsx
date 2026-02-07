@@ -90,9 +90,13 @@ export function SiswaSidebar() {
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-gray-400" />
-              </div>
+              <Image
+                src="/icon/logo-no-bg-png-blue.png"
+                alt="E-Learning Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             )}
           </div>
           <div>
@@ -112,7 +116,7 @@ export function SiswaSidebar() {
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <a href={item.url} className={cn(
                         "hover:bg-accent hover:text-accent-foreground transition-colors",
-                        isActive(item.url) && "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] !text-white font-medium [&>svg]:!text-white hover:opacity-90"
+                        isActive(item.url) && "bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 !text-white font-medium [&>svg]:!text-white hover:opacity-90"
                       )}>
                         <item.icon className="w-4 h-4" />
                         <span>{item.title}</span>
@@ -131,7 +135,7 @@ export function SiswaSidebar() {
             <SidebarMenuButton asChild isActive={isActive("/siswa/settings")}>
               <a href="/siswa/settings" className={cn(
                 "hover:bg-accent hover:text-accent-foreground transition-colors",
-                isActive("/siswa/settings") && "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] !text-white font-medium [&>svg]:!text-white hover:opacity-90"
+                isActive("/siswa/settings") && "bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 !text-white font-medium [&>svg]:!text-white hover:opacity-90"
               )}>
                 <Settings className="w-4 h-4" />
                 <span>Pengaturan</span>

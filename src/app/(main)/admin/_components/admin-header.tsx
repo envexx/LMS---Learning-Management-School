@@ -29,7 +29,7 @@ export function AdminHeader() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="gap-2">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gradient-to-br from-[#1488cc] to-[#2b32b2] text-white">
+              <AvatarFallback className="bg-gradient-to-br from-[#0221CD] to-[#0221CD]/80 text-white">
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

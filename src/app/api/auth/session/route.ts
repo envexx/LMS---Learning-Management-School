@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { getSession, refreshSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const session = await getSession();
+    // Use refreshSession to automatically refresh the session on each check (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || !session.userId) {
       return NextResponse.json({

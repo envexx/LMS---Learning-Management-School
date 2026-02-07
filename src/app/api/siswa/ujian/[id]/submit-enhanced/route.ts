@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { refreshSession } from '@/lib/session';
 
 /**
  * Enhanced Submit Endpoint
@@ -19,7 +19,8 @@ export async function POST(
   
   try {
     const { id: ujianId } = await params;
-    const session = await getSession();
+    // Use refreshSession to keep session alive during enhanced submit (rolling session)
+    const session = await refreshSession();
 
     // Validate session
     if (!session.isLoggedIn || session.role !== 'SISWA') {

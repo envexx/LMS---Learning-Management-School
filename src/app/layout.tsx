@@ -23,6 +23,25 @@ export const metadata: Metadata = {
     template: `%s - ${schoolName} - E-Learning`,
   },
   description: "Sistem E-Learning untuk manajemen pendidikan",
+  icons: {
+    icon: [
+      {
+        url: '/icon/logo-no-bg-png-blue.png',
+        sizes: '32x32',
+        type: 'image/png',
+      },
+      {
+        url: '/icon/logo-no-bg-png-blue.png',
+        sizes: '16x16',
+        type: 'image/png',
+      },
+    ],
+    apple: {
+      url: '/icon/logo-no-bg-png-blue.png',
+      sizes: '180x180',
+      type: 'image/png',
+    },
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

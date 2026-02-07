@@ -687,7 +687,7 @@ export default function EditUjianPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] p-1">
+        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-br from-[#0221CD] to-[#0221CD]/80 p-1">
           <TabsTrigger value="info" className="gap-2 data-[state=active]:bg-white data-[state=active]:text-[#165DFB] text-white">
             <FileText className="w-4 h-4" weight="duotone" />
             Informasi
@@ -1106,7 +1106,7 @@ export default function EditUjianPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Sub-tabs for PDF and Word */}
-              <div className="flex gap-2 bg-gradient-to-br from-[#165DFB] to-[#0d4fc7] p-1 rounded-lg">
+              <div className="flex gap-2 bg-gradient-to-br from-[#0221CD] to-[#0221CD]/80 p-1 rounded-lg">
                 <button
                   onClick={() => setImportSource("pdf")}
                   className={cn(

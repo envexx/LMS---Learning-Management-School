@@ -97,7 +97,7 @@ export default function SiswaDashboardPage() {
               className={cn(
                 "flex-1 h-12 rounded-xl font-semibold transition-all",
                 pathname === '/siswa' 
-                  ? "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] text-white shadow-lg" 
+                  ? "bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 text-white shadow-lg" 
                   : "bg-white hover:bg-gray-50 border shadow-sm !text-black"
               )}
             >
@@ -108,7 +108,7 @@ export default function SiswaDashboardPage() {
               className={cn(
                 "flex-1 h-12 rounded-xl font-semibold transition-all",
                 pathname === '/siswa/ujian' 
-                  ? "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] text-white shadow-lg" 
+                  ? "bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 text-white shadow-lg" 
                   : "bg-white hover:bg-gray-50 border shadow-sm !text-black [&_svg]:!text-black"
               )}
             >
@@ -120,7 +120,7 @@ export default function SiswaDashboardPage() {
               className={cn(
                 "flex-1 h-12 rounded-xl font-semibold transition-all",
                 pathname === '/siswa/raport' 
-                  ? "bg-gradient-to-r from-[#1488cc] to-[#2b32b2] text-white shadow-lg" 
+                  ? "bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 text-white shadow-lg" 
                   : "bg-white hover:bg-gray-50 border shadow-sm !text-black [&_svg]:!text-black"
               )}
             >

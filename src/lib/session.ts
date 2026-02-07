@@ -27,13 +27,25 @@ export const sessionOptions: SessionOptions = {
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 8, // 8 hours - Rolling session (auto-refresh on activity)
+    sameSite: 'lax',
   },
+  ttl: 60 * 60 * 8, // Time to live: 8 hours (will be refreshed on each request)
 };
 
 export async function getSession() {
   const cookieStore = await cookies();
   return getIronSession<SessionData>(cookieStore, sessionOptions);
+}
+
+// Helper to refresh session on activity (rolling session)
+export async function refreshSession() {
+  const session = await getSession();
+  if (session.isLoggedIn) {
+    // Touching session will automatically refresh the maxAge/ttl
+    await session.save();
+  }
+  return session;
 }
 
 export async function createSession(data: Omit<SessionData, 'isLoggedIn'>) {

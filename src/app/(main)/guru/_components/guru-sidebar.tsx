@@ -113,9 +113,13 @@ export function GuruSidebar() {
                 unoptimized // Disable Next.js optimization for better loading
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-gray-400" />
-              </div>
+              <Image
+                src="/icon/logo-no-bg-png-blue.png"
+                alt="E-Learning Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             )}
           </div>
           <div>

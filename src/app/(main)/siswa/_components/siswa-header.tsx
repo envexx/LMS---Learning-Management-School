@@ -62,9 +62,13 @@ export function SiswaHeader() {
               priority
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-gray-400" />
-            </div>
+            <Image
+              src="/icon/logo-no-bg-png-blue.png"
+              alt="E-Learning Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           )}
         </div>
         <div className="hidden sm:block">
@@ -82,7 +86,7 @@ export function SiswaHeader() {
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={siswa.foto || "/avatars/siswa.png"} alt={nama} />
-                <AvatarFallback className="bg-gradient-to-r from-[#1488cc] to-[#2b32b2] text-white">
+                <AvatarFallback className="bg-gradient-to-r from-[#0221CD] to-[#0221CD]/80 text-white">
                   {initials}
                 </AvatarFallback>
               </Avatar>

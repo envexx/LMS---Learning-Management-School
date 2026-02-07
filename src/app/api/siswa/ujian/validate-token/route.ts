@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { refreshSession } from '@/lib/session';
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    // Use refreshSession for token validation (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || session.role !== 'SISWA') {
       return NextResponse.json(

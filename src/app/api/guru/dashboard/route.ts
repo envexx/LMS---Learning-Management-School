@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/session';
+import { refreshSession } from '@/lib/session';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 export async function GET() {
   try {
-    const session = await getSession();
+    // Use refreshSession to keep session alive on dashboard access (rolling session)
+    const session = await refreshSession();
 
     if (!session.isLoggedIn || session.role !== 'GURU') {
       return NextResponse.json(

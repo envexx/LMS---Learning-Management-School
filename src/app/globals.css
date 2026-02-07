@@ -71,30 +71,30 @@ These serve as the fallback; there is no separate default.css file. */
   --card-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
-  --primary: #165DFB; /* Base blue color */
+  --primary: #0221CD; /* New blue color */
   --primary-foreground: #ffffff;
   --secondary: #e0f2fe; /* Light blue background */
-  --secondary-foreground: #165DFB;
+  --secondary-foreground: #0221CD;
   --muted: #f0f9ff; /* Very light blue */
   --muted-foreground: #0c4a6e;
-  --accent: #165DFB; /* Base blue */
+  --accent: #0221CD; /* New blue color */
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --border: #e5e7eb; /* Gray border */
   --input: #e0f2fe; /* Light blue input */
-  --ring: #165DFB; /* Base blue ring */
-  --chart-1: #165DFB; /* Base blue */
+  --ring: #0221CD; /* New blue ring */
+  --chart-1: #0221CD; /* New blue */
   --chart-2: #3b82f6; /* Blue 500 */
-  --chart-3: #165DFB; /* Base blue */
+  --chart-3: #0221CD; /* New blue */
   --chart-4: #3b82f6;
-  --chart-5: #165DFB;
+  --chart-5: #0221CD;
   --sidebar: #ffffff; /* White sidebar */
   --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #165DFB; /* Base blue */
+  --sidebar-primary: #0221CD; /* New blue */
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f3f4f6; /* Gray accent for hover */
   --sidebar-accent-foreground: #1f2937; /* Dark gray text */
-  --sidebar-active-bg: #165DFB; /* Blue for active items */
+  --sidebar-active-bg: #0221CD; /* New blue for active items */
   --sidebar-active-foreground: #ffffff; /* White text for active items */
   --sidebar-border: #e5e7eb; /* Gray border */
   --sidebar-ring: #165DFB; /* Base blue */

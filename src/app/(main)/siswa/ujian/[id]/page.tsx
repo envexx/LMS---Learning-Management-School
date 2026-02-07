@@ -606,7 +606,7 @@ export default function SiswaUjianDetailPage() {
   // Fungsi untuk start kamera dengan WebRTC
   const startCamera = async () => {
     setCameraLoading(true);
-    setCameraError(null);
+          setCameraError(null);
     
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -628,7 +628,7 @@ export default function SiswaUjianDetailPage() {
       setCameraLoading(false);
       setCameraError(null);
     } catch (error: any) {
-      console.error('Camera access error:', error);
+          console.error('Camera access error:', error);
       setCameraLoading(false);
       
       const errorName = error.name || String(error);
@@ -636,9 +636,9 @@ export default function SiswaUjianDetailPage() {
         setCameraError('Akses kamera ditolak. Silakan izinkan akses kamera di pengaturan browser Anda.');
       } else if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
         setCameraError('Kamera tidak ditemukan pada perangkat Anda.');
-      } else {
+          } else {
         setCameraError('Tidak dapat mengakses kamera. Pastikan kamera tidak digunakan aplikasi lain.');
-      }
+          }
     }
   };
 
@@ -1294,36 +1294,36 @@ export default function SiswaUjianDetailPage() {
                             Foto Jawaban
                           </Label>
                           <div className="flex gap-1">
-                            <Button
-                              type="button"
+                    <Button
+                      type="button"
                               variant="outline"
-                              size="sm"
+                      size="sm"
                               className="h-7 px-2"
                               onClick={() => openCameraModal(currentQ.id)}
-                            >
+                    >
                               <Camera className="w-3 h-3 mr-1" />
                               Ganti
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
+                    </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
                               className="h-7 px-2"
-                              onClick={() => {
-                                const newImages = { ...essayImages };
-                                delete newImages[currentQ.id];
-                                setEssayImages(newImages);
-                                // Update localStorage
-                                try {
-                                  localStorage.setItem(getImagesStorageKey(), JSON.stringify(newImages));
-                                } catch (error) {
-                                  console.error('Error updating localStorage:', error);
-                                }
+                            onClick={() => {
+                              const newImages = { ...essayImages };
+                              delete newImages[currentQ.id];
+                              setEssayImages(newImages);
+                              // Update localStorage
+                              try {
+                                localStorage.setItem(getImagesStorageKey(), JSON.stringify(newImages));
+                              } catch (error) {
+                                console.error('Error updating localStorage:', error);
+                              }
                                 toast.success('Foto jawaban dihapus');
-                              }}
-                            >
+                            }}
+                          >
                               <X className="w-3 h-3" />
-                            </Button>
+                          </Button>
                           </div>
                         </div>
                         <img
@@ -1338,20 +1338,20 @@ export default function SiswaUjianDetailPage() {
                   {/* Tombol Ambil Foto (jika belum ada foto) */}
                   {!essayImages[currentQ.id] && (
                     <div className="mb-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                         onClick={() => openCameraModal(currentQ.id)}
                         className="w-full sm:w-auto"
-                      >
-                        <Camera className="w-4 h-4 mr-2" />
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
                         Ambil Foto Jawaban
-                      </Button>
+                          </Button>
                       <p className="text-xs text-muted-foreground mt-1">
                         Upload foto lembar jawaban Anda (opsional)
                       </p>
-                    </div>
+                        </div>
                   )}
 
                   {/* Text Area - Selalu ditampilkan */}
@@ -1381,7 +1381,7 @@ export default function SiswaUjianDetailPage() {
                       rows={essayImages[currentQ.id] ? 4 : 8}
                       className="text-sm sm:text-base"
                     />
-                  </div>
+                        </div>
 
                   {/* Save status indicator for Essay */}
                   <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
@@ -1630,7 +1630,7 @@ export default function SiswaUjianDetailPage() {
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover"
+                    className="w-full h-full object-cover"
                     />
                   )}
                   
@@ -1641,8 +1641,8 @@ export default function SiswaUjianDetailPage() {
                         <CircleNotch className="w-10 h-10 sm:w-12 sm:h-12 animate-spin mx-auto mb-2 sm:mb-3" />
                         <p className="text-sm sm:text-base font-semibold">Memuat kamera...</p>
                         <p className="text-xs text-gray-300 mt-1">Mohon izinkan akses kamera</p>
-                      </div>
                     </div>
+                  </div>
                   )}
 
                   {/* Error overlay */}
@@ -1653,8 +1653,8 @@ export default function SiswaUjianDetailPage() {
                         <p className="text-sm">Kamera tidak tersedia</p>
                         <p className="text-xs text-gray-400 mt-2">Refresh halaman untuk coba lagi</p>
                       </div>
-                    </div>
-                  )}
+              </div>
+            )}
 
                   {/* Crosshair/Guide untuk centering - Responsif */}
                   {!cameraLoading && !cameraError && !capturedPhoto && (
@@ -1672,21 +1672,21 @@ export default function SiswaUjianDetailPage() {
               {capturedPhoto ? (
                 // Tombol untuk mode preview
                 <>
-                  <Button
-                    variant="outline"
+              <Button
+                variant="outline"
                     onClick={handleCloseModal}
                     disabled={isUploadingPhoto}
                     className="order-3 sm:order-1"
-                  >
-                    Batal
-                  </Button>
+              >
+                Batal
+              </Button>
                   <Button
                     variant="outline"
                     onClick={handleRetakePhoto}
                     disabled={isUploadingPhoto}
                     className="order-2 sm:order-2"
                   >
-                    <Camera className="w-4 h-4 mr-2" />
+                  <Camera className="w-4 h-4 mr-2" />
                     Ambil Ulang
                   </Button>
                   <Button
@@ -1732,10 +1732,10 @@ export default function SiswaUjianDetailPage() {
                     ) : (
                       <>
                         <Camera className="w-5 h-5 mr-2" weight="fill" />
-                        Ambil Foto
+                  Ambil Foto
                       </>
                     )}
-                  </Button>
+                </Button>
                 </>
               )}
             </div>
@@ -1761,8 +1761,8 @@ export default function SiswaUjianDetailPage() {
                   </p>
                   <p className="text-xs text-gray-500 leading-snug">
                     Pastikan pencahayaan cukup dan tulisan jelas terlihat
-                  </p>
-                </div>
+            </p>
+          </div>
               )}
             </div>
             </div>

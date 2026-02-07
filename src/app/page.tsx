@@ -71,12 +71,12 @@ export default function SiswaLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ddeeff] via-[#aaccff] to-[#88aaff] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#0221CD] p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             {schoolInfo?.logo ? (
-              <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-lg bg-white p-2">
+              <div className="relative w-20 h-20">
                 <Image
                   src={schoolInfo.logo}
                   alt={schoolInfo.nama || 'School Logo'}
@@ -86,8 +86,14 @@ export default function SiswaLoginPage() {
                 />
               </div>
             ) : (
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-10 h-10 text-primary-foreground" />
+              <div className="relative w-20 h-20">
+                <Image
+                  src="/icon/logo-no-bg-png-blue.png"
+                  alt="E-Learning Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
             )}
           </div>
@@ -123,7 +129,7 @@ export default function SiswaLoginPage() {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-[#1488cc] to-[#2b32b2] hover:opacity-90 transition-opacity text-white"
+              className="w-full text-white"
               disabled={isLoading}
             >
               {isLoading ? "Memproses..." : "Masuk"}
