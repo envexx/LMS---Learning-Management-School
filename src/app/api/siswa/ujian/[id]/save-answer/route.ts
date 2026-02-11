@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { refreshSession } from '@/lib/session';
+import { rateLimiters } from '@/lib/rate-limit';
 
 /**
  * API endpoint untuk auto-save jawaban (bukan submit final)
@@ -9,6 +10,7 @@ import { refreshSession } from '@/lib/session';
  * - Comprehensive validation
  * - Better error handling
  * - Detailed logging
+ * - Rate limiting (1 request per 2 seconds per question per student)
  */
 export async function POST(
   request: Request,
@@ -39,6 +41,17 @@ export async function POST(
 
     const body = await request.json();
     const { questionId, questionType, answer, timestamp } = body;
+
+    // Rate limiting: 1 request per 2 seconds per question per student
+    const rateLimitKey = `${siswa.id}-${questionId}`;
+    const isAllowed = rateLimiters.saveAnswer.check(rateLimitKey);
+    
+    if (!isAllowed) {
+      return NextResponse.json(
+        { success: false, message: 'Terlalu banyak request. Tunggu 2 detik.' },
+        { status: 429 }
+      );
+    }
 
     // Validate input
     if (!questionId || !questionType || answer === undefined) {

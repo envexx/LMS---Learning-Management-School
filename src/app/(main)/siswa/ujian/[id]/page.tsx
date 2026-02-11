@@ -155,6 +155,32 @@ export default function SiswaUjianDetailPage() {
       fetchUjianDetail();
       loadAnswersFromStorage();
       
+      // Recovery failed answers from localStorage
+      const recoverFailedAnswers = () => {
+        try {
+          const key = `failedAnswers_${params.id}`;
+          const failed = localStorage.getItem(key);
+          
+          if (failed) {
+            const failedAnswers = JSON.parse(failed);
+            console.log(`🔄 Recovering ${failedAnswers.length} failed answers from localStorage`);
+            
+            // Re-queue all failed answers
+            failedAnswers.forEach((ans: any) => {
+              examQueue.addAnswer(ans.questionId, ans.questionType, ans.answer);
+            });
+            
+            // Clear localStorage after re-queuing
+            localStorage.removeItem(key);
+            toast.info(`Memulihkan ${failedAnswers.length} jawaban yang gagal tersimpan`);
+          }
+        } catch (error) {
+          console.error('Error recovering failed answers:', error);
+        }
+      };
+      
+      recoverFailedAnswers();
+      
       setTimeout(() => {
         isInitialLoadRef.current = false;
       }, 2000);

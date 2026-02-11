@@ -7,13 +7,17 @@ const globalForPrisma = globalThis as unknown as {
   pool: Pool | undefined;
 };
 
-// Create connection pool
+// Create connection pool with limits to prevent memory leak
 // For Coolify databases, SSL might not be required
 const pool = globalForPrisma.pool ?? new Pool({ 
   connectionString: process.env.DATABASE_URL,
   // Disable SSL for Coolify (set to false if SSL is not supported)
   // Set to { rejectUnauthorized: false } if SSL is required
-  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  // Connection pool limits (optimal for VPS 2-4GB RAM with 300 users)
+  max: 10,                        // Maximum 10 concurrent connections
+  idleTimeoutMillis: 30000,       // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 5000,  // Timeout if can't get connection in 5 seconds
 });
 
 // Create adapter

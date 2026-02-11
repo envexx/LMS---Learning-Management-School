@@ -70,59 +70,63 @@ class ExamAnswerQueue {
     
     this.isProcessing = true;
 
-    for (const [questionId, item] of this.queue.entries()) {
-      if (item.status === 'saved' || item.status === 'saving') {
-        continue;
-      }
-
-      // Mark as saving
-      item.status = 'saving';
-
-      try {
-        const response = await fetch(`/api/siswa/ujian/${this.examId}/save-answer`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            questionId: item.questionId,
-            questionType: item.questionType,
-            answer: item.answer,
-            timestamp: item.timestamp
-          })
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          item.status = 'saved';
-          item.error = undefined;
-          console.log(`✅ Jawaban soal ${item.questionId} tersimpan`);
-        } else {
-          throw new Error(result.message || `HTTP ${response.status}`);
+    try {
+      for (const [questionId, item] of this.queue.entries()) {
+        if (item.status === 'saved' || item.status === 'saving') {
+          continue;
         }
-      } catch (error: any) {
-        item.retryCount++;
-        item.error = error.message;
 
-        console.warn(`⚠️ Gagal simpan soal ${item.questionId} (attempt ${item.retryCount}/${this.maxRetries}):`, error.message);
+        // Mark as saving
+        item.status = 'saving';
 
-        // Retry with exponential backoff
-        if (item.retryCount < this.maxRetries) {
-          item.status = 'pending';
-          
-          // Wait before retry
-          const delay = this.retryDelay * Math.pow(2, item.retryCount - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        } else {
-          item.status = 'failed';
-          console.error(`❌ Gagal simpan soal ${item.questionId} setelah ${this.maxRetries} percobaan`);
-          
-          // Save to localStorage for recovery
-          this.saveFailedAnswerToLocalStorage(item);
+        try {
+          const response = await fetch(`/api/siswa/ujian/${this.examId}/save-answer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              questionId: item.questionId,
+              questionType: item.questionType,
+              answer: item.answer,
+              timestamp: item.timestamp
+            })
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            item.status = 'saved';
+            item.error = undefined;
+            console.log(`✅ Jawaban soal ${item.questionId} tersimpan`);
+          } else {
+            throw new Error(result.message || `HTTP ${response.status}`);
+          }
+        } catch (error: any) {
+          item.retryCount++;
+          item.error = error.message;
+
+          console.warn(`⚠️ Gagal simpan soal ${item.questionId} (attempt ${item.retryCount}/${this.maxRetries}):`, error.message);
+
+          // Retry with exponential backoff
+          if (item.retryCount < this.maxRetries) {
+            item.status = 'pending';
+            
+            // Wait before retry
+            const delay = this.retryDelay * Math.pow(2, item.retryCount - 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            item.status = 'failed';
+            console.error(`❌ Gagal simpan soal ${item.questionId} setelah ${this.maxRetries} percobaan`);
+            
+            // Save to localStorage for recovery
+            this.saveFailedAnswerToLocalStorage(item);
+          }
         }
       }
+    } finally {
+      // ALWAYS reset isProcessing, even if there's an unexpected error
+      // This prevents the queue from getting stuck
+      this.isProcessing = false;
     }
-
-    this.isProcessing = false;
 
     // Check if there are still pending items
     const hasPending = Array.from(this.queue.values()).some(

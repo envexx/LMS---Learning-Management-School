@@ -543,6 +543,27 @@ model GradeConfig {
 }
 
 // ============================================
+// FAILED NOTIFICATIONS
+// ============================================
+
+model FailedNotification {
+  id        String   @id @default(cuid())
+  receiver  String   // Nomor WhatsApp
+  message   String   @db.Text // Pesan yang gagal dikirim
+  error     String?  // Error message
+  failedAt  DateTime @default(now())
+  retried   Boolean  @default(false) // Apakah sudah dicoba ulang manual
+  retriedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([receiver])
+  @@index([failedAt])
+  @@index([retried])
+  @@map("failed_notifications")
+}
+
+// ============================================
 // NILAI - REMOVED
 // ============================================
 // Nilai sekarang dihitung langsung dari UjianSubmission
