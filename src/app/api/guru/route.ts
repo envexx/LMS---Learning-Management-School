@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { includes } from '@/lib/query-helpers';
+import bcrypt from 'bcryptjs';
 
 export async function GET(request: Request) {
   try {
@@ -37,11 +38,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { mapelIds = [], kelasIds = [], ...guruData } = body;
     
+    // Hash default password
+    const defaultPassword = 'guru123';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+    
     // Create User account first
     const user = await prisma.user.create({
       data: {
         email: guruData.email,
-        password: 'guru123', // Default password: guru123
+        password: hashedPassword, // Default password: guru123 (hashed)
         role: 'GURU',
         isActive: guruData.isActive !== undefined ? guruData.isActive : true,
       },

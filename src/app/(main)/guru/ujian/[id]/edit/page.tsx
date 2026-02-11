@@ -52,12 +52,37 @@ import {
   Shuffle,
   Eye,
   EyeClosed,
+  DotsSixVertical,
+  CaretDown,
+  CaretUp,
 } from "@phosphor-icons/react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { parseWordFile } from "@/lib/wordParser";
 import {
   AlertDialog,
@@ -100,6 +125,87 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
+// Sortable Question Component
+function SortableQuestionItem({ 
+  id, 
+  index, 
+  children, 
+  isCollapsed, 
+  onToggleCollapse,
+  onDelete,
+  canDelete = true
+}: { 
+  id: string; 
+  index: number; 
+  children: React.ReactNode; 
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  onDelete: () => void;
+  canDelete?: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <div className={cn(
+        "p-4 border rounded-lg space-y-4",
+        isDragging && "shadow-lg ring-2 ring-blue-500"
+      )}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 flex-1">
+            <button
+              type="button"
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-100 rounded"
+              {...attributes}
+              {...listeners}
+            >
+              <DotsSixVertical className="w-5 h-5 text-gray-400" weight="bold" />
+            </button>
+            <h4 className="font-semibold">Soal {index + 1}</h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onToggleCollapse}
+            >
+              {isCollapsed ? (
+                <CaretDown className="w-4 h-4" weight="bold" />
+              ) : (
+                <CaretUp className="w-4 h-4" weight="bold" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              disabled={!canDelete}
+            >
+              <Trash className="w-4 h-4 text-red-600" weight="duotone" />
+            </Button>
+          </div>
+        </div>
+        {!isCollapsed && children}
+      </div>
+    </div>
+  );
+}
+
 export default function EditUjianPage() {
   const router = useRouter();
   const params = useParams();
@@ -122,6 +228,15 @@ export default function EditUjianPage() {
 
   const [multipleChoice, setMultipleChoice] = useState<MultipleChoiceQuestion[]>([]);
   const [essay, setEssay] = useState<EssayQuestion[]>([]);
+  const [collapsedQuestions, setCollapsedQuestions] = useState<Set<string>>(new Set());
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch ujian list for kelas and mapel dropdown
   const { data: ujianListData, error: ujianListError, isLoading: ujianListLoading } = useSWR('/api/guru/ujian?status=all', fetcher);
@@ -223,6 +338,11 @@ export default function EditUjianPage() {
 
   const handleRemoveMultipleChoice = (id: string) => {
     setMultipleChoice(multipleChoice.filter((q) => q.id !== id));
+    setCollapsedQuestions(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
   };
 
   const handleAddEssay = () => {
@@ -238,6 +358,70 @@ export default function EditUjianPage() {
 
   const handleRemoveEssay = (id: string) => {
     setEssay(essay.filter((q) => q.id !== id));
+    setCollapsedQuestions(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
+
+  // Handle drag end for multiple choice
+  const handleDragEndMultipleChoice = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setMultipleChoice((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // Handle drag end for essay
+  const handleDragEndEssay = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setEssay((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  // Toggle collapse for a question
+  const toggleCollapse = (id: string) => {
+    setCollapsedQuestions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  // Collapse all questions
+  const collapseAll = (type: 'pg' | 'essay') => {
+    const ids = type === 'pg' 
+      ? multipleChoice.map(q => q.id)
+      : essay.map(q => q.id);
+    setCollapsedQuestions(prev => new Set([...prev, ...ids]));
+  };
+
+  // Expand all questions
+  const expandAll = (type: 'pg' | 'essay') => {
+    const ids = type === 'pg' 
+      ? multipleChoice.map(q => q.id)
+      : essay.map(q => q.id);
+    setCollapsedQuestions(prev => {
+      const newSet = new Set(prev);
+      ids.forEach(id => newSet.delete(id));
+      return newSet;
+    });
   };
 
   const handleImportPDF = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -942,89 +1126,113 @@ export default function EditUjianPage() {
                 <div>
                   <CardTitle>Soal Pilihan Ganda</CardTitle>
                   <CardDescription>
-                    Tambah dan kelola soal pilihan ganda
+                    Drag untuk mengubah urutan soal. Klik panah untuk expand/collapse.
                   </CardDescription>
                 </div>
-                <Button onClick={handleAddMultipleChoice}>
-                  <Plus className="w-4 h-4 mr-2" weight="bold" />
-                  Tambah Soal
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => collapseAll('pg')}>
+                    Collapse All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => expandAll('pg')}>
+                    Expand All
+                  </Button>
+                  <Button onClick={handleAddMultipleChoice}>
+                    <Plus className="w-4 h-4 mr-2" weight="bold" />
+                    Tambah Soal
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {multipleChoice.map((question, index) => (
-                <div key={question.id} className="p-4 border rounded-lg space-y-4">
-                  <div className="flex items-start justify-between">
-                    <h4 className="font-semibold">Soal {index + 1}</h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveMultipleChoice(question.id)}
-                      disabled={multipleChoice.length === 1}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEndMultipleChoice}
+              >
+                <SortableContext
+                  items={multipleChoice.map(q => q.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {multipleChoice.map((question, index) => (
+                    <SortableQuestionItem
+                      key={question.id}
+                      id={question.id}
+                      index={index}
+                      isCollapsed={collapsedQuestions.has(question.id)}
+                      onToggleCollapse={() => toggleCollapse(question.id)}
+                      onDelete={() => handleRemoveMultipleChoice(question.id)}
+                      canDelete={multipleChoice.length > 1}
                     >
-                      <Trash className="w-4 h-4 text-red-600" weight="duotone" />
-                    </Button>
-                  </div>
+                      <div className="space-y-4">
 
-                  <div className="space-y-2">
-                    <Label>Pertanyaan</Label>
-                    <TiptapEditorWithToolbar
-                      onChange={(html) => {
-                        const updated = [...multipleChoice];
-                        updated[index].question = html;
-                        setMultipleChoice(updated);
-                      }}
-                      content={question.question}
-                      placeholder="Tulis pertanyaan di sini..."
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Pilihan Jawaban</Label>
-                    {question.options.map((option, optIndex) => (
-                      <div key={optIndex} className="flex items-start gap-2">
-                        <span className="text-sm font-medium text-muted-foreground mt-2 min-w-[20px]">
-                          {String.fromCharCode(65 + optIndex)}.
-                        </span>
-                        <div className="flex-1">
+                        <div className="space-y-2">
+                          <Label>Pertanyaan</Label>
                           <TiptapEditorWithToolbar
                             onChange={(html) => {
                               const updated = [...multipleChoice];
-                              updated[index].options[optIndex] = html;
+                              updated[index].question = html;
                               setMultipleChoice(updated);
                             }}
-                            content={option}
-                            placeholder={`Pilihan ${String.fromCharCode(65 + optIndex)}`}
+                            content={question.question}
+                            placeholder="Tulis pertanyaan di sini..."
                           />
                         </div>
+
+                        <Collapsible defaultOpen={false}>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full">
+                              <CaretDown className="w-4 h-4 mr-2" weight="bold" />
+                              Pilihan Jawaban
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="space-y-3 mt-3">
+                            {question.options.map((option, optIndex) => (
+                              <div key={optIndex} className="flex items-start gap-2">
+                                <span className="text-sm font-medium text-muted-foreground mt-2 min-w-[20px]">
+                                  {String.fromCharCode(65 + optIndex)}.
+                                </span>
+                                <div className="flex-1">
+                                  <TiptapEditorWithToolbar
+                                    onChange={(html) => {
+                                      const updated = [...multipleChoice];
+                                      updated[index].options[optIndex] = html;
+                                      setMultipleChoice(updated);
+                                    }}
+                                    content={option}
+                                    placeholder={`Pilihan ${String.fromCharCode(65 + optIndex)}`}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+
+                        <div className="space-y-2">
+                          <Label>Kunci Jawaban</Label>
+                          <Select
+                            value={question.correctAnswer}
+                            onValueChange={(value) => {
+                              const updated = [...multipleChoice];
+                              updated[index].correctAnswer = value;
+                              setMultipleChoice(updated);
+                            }}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Pilih Jawaban" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="A">A</SelectItem>
+                              <SelectItem value="B">B</SelectItem>
+                              <SelectItem value="C">C</SelectItem>
+                              <SelectItem value="D">D</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Kunci Jawaban</Label>
-                    <Select
-                      value={question.correctAnswer}
-                      onValueChange={(value) => {
-                        const updated = [...multipleChoice];
-                        updated[index].correctAnswer = value;
-                        setMultipleChoice(updated);
-                      }}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Pilih Jawaban" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                        <SelectItem value="C">C</SelectItem>
-                        <SelectItem value="D">D</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                </div>
-              ))}
+                    </SortableQuestionItem>
+                  ))}
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1037,60 +1245,85 @@ export default function EditUjianPage() {
                 <div>
                   <CardTitle>Soal Essay</CardTitle>
                   <CardDescription>
-                    Tambah dan kelola soal essay
+                    Drag untuk mengubah urutan soal. Klik panah untuk expand/collapse.
                   </CardDescription>
                 </div>
-                <Button onClick={handleAddEssay}>
-                  <Plus className="w-4 h-4 mr-2" weight="bold" />
-                  Tambah Soal
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => collapseAll('essay')}>
+                    Collapse All
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => expandAll('essay')}>
+                    Expand All
+                  </Button>
+                  <Button onClick={handleAddEssay}>
+                    <Plus className="w-4 h-4 mr-2" weight="bold" />
+                    Tambah Soal
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {essay.map((question, index) => (
-                <div key={question.id} className="p-4 border rounded-lg space-y-4">
-                  <div className="flex items-start justify-between">
-                    <h4 className="font-semibold">Soal {index + 1}</h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEssay(question.id)}
-                      disabled={essay.length === 1}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEndEssay}
+              >
+                <SortableContext
+                  items={essay.map(q => q.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {essay.map((question, index) => (
+                    <SortableQuestionItem
+                      key={question.id}
+                      id={question.id}
+                      index={index}
+                      isCollapsed={collapsedQuestions.has(question.id)}
+                      onToggleCollapse={() => toggleCollapse(question.id)}
+                      onDelete={() => handleRemoveEssay(question.id)}
+                      canDelete={essay.length > 1}
                     >
-                      <Trash className="w-4 h-4 text-red-600" weight="duotone" />
-                    </Button>
-                  </div>
+                      <div className="space-y-4">
 
-                  <div className="space-y-2">
-                    <Label>Pertanyaan</Label>
-                    <TiptapEditorWithToolbar
-                      onChange={(html) => {
-                        const updated = [...essay];
-                        updated[index].question = html;
-                        setEssay(updated);
-                      }}
-                      content={question.question}
-                      placeholder="Tulis pertanyaan essay di sini..."
-                    />
-                  </div>
+                        <div className="space-y-2">
+                          <Label>Pertanyaan</Label>
+                          <TiptapEditorWithToolbar
+                            onChange={(html) => {
+                              const updated = [...essay];
+                              updated[index].question = html;
+                              setEssay(updated);
+                            }}
+                            content={question.question}
+                            placeholder="Tulis pertanyaan essay di sini..."
+                          />
+                        </div>
 
-                  <div className="space-y-2">
-                    <Label>Kunci Jawaban</Label>
-                    <TiptapEditorWithToolbar
-                      onChange={(html) => {
-                        const updated = [...essay];
-                        updated[index].answerKey = html;
-                        setEssay(updated);
-                      }}
-                      content={question.answerKey}
-                      placeholder="Tulis kunci jawaban atau poin-poin penting yang harus ada dalam jawaban siswa..."
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Kunci jawaban ini akan membantu Anda dalam menilai jawaban siswa
-                    </p>
-                  </div>
-                </div>
-              ))}
+                        <Collapsible defaultOpen={false}>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full">
+                              <CaretDown className="w-4 h-4 mr-2" weight="bold" />
+                              Kunci Jawaban
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="space-y-2 mt-3">
+                            <TiptapEditorWithToolbar
+                              onChange={(html) => {
+                                const updated = [...essay];
+                                updated[index].answerKey = html;
+                                setEssay(updated);
+                              }}
+                              content={question.answerKey}
+                              placeholder="Tulis kunci jawaban atau poin-poin penting yang harus ada dalam jawaban siswa..."
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Kunci jawaban ini akan membantu Anda dalam menilai jawaban siswa
+                            </p>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </div>
+                    </SortableQuestionItem>
+                  ))}
+                </SortableContext>
+              </DndContext>
             </CardContent>
           </Card>
         </TabsContent>
